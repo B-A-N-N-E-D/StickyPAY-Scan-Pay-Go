@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from "../lib/utils";
 import { ScanLine, ArrowRight, Sparkles, Tag, Copy, Check, Store, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getUser, getOrders } from '../components/localData';
 import { motion, AnimatePresence } from 'framer-motion';
+import { StoreContext } from "@/lib/StoreContext";
 
 const ALL_OFFERS = [
   { code: 'SAVE10', title: '10% Off', desc: 'Get 10% off on orders above ₹500', min: 500, type: 'percent', value: 10, store: 'All Stores', color: 'from-yellow-400 to-orange-400', storeKey: null },
@@ -18,10 +19,10 @@ const ALL_OFFERS = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const { activeStore: currentStore } = useContext(StoreContext);
   const [greeting, setGreeting] = useState('');
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [currentStore, setCurrentStore] = useState(null);
   const [copied, setCopied] = useState('');
 
   useEffect(() => {
@@ -31,9 +32,6 @@ export default function Home() {
     else setGreeting('Good Evening');
     setUser(getUser());
     setOrders(getOrders());
-
-    const savedStore = localStorage.getItem('sp_active_store');
-    if (savedStore) setCurrentStore(JSON.parse(savedStore));
   }, []);
 
   const copy = (code) => {
@@ -81,11 +79,13 @@ export default function Home() {
             <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/2 group-hover:scale-125 transition-transform duration-500" />
             <div className="relative z-10">
-              <h2 className="text-black text-2xl font-bold mb-2">Start Shopping</h2>
-              <p className="text-black/70 mb-5 text-sm">Scan store QR to begin seamless checkout</p>
+              <h2 className="text-black text-2xl font-bold mb-2">{currentStore ? 'Scan Items' : 'Start Shopping'}</h2>
+              <p className="text-black/70 mb-5 text-sm">
+                {currentStore ? `Scan products at ${currentStore.name}` : 'Scan store QR to begin seamless checkout'}
+              </p>
               <div className="inline-flex items-center gap-2 bg-black text-yellow-400 font-semibold px-5 py-3 rounded-xl text-sm group-hover:gap-3 transition-all duration-300">
                 <ScanLine className="w-4 h-4" />
-                Scan Store QR
+                {currentStore ? 'Scan Barcode' : 'Scan Store QR'}
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>

@@ -6,18 +6,30 @@ export default function Layout({ children, currentPageName }) {
 
     useEffect(() => {
         const updateCartCount = () => {
-            const saved = localStorage.getItem('stickyPAYCart');
+            try {
+                const saved = localStorage.getItem('stickyPayCart');
 
-            if (saved) {
+                if (!saved) {
+                    setCartCount(0);
+                    return;
+                }
+
                 const data = JSON.parse(saved);
-                const count =
-                    data.items?.reduce(
-                        (sum, item) => sum + item.quantity,
-                        0
-                    ) || 0;
+
+                // Extra safety
+                if (!data || !Array.isArray(data.items)) {
+                    setCartCount(0);
+                    return;
+                }
+
+                const count = data.items.reduce(
+                    (sum, item) => sum + (item.quantity || 0),
+                    0
+                );
 
                 setCartCount(count);
-            } else {
+            } catch (error) {
+                console.error("Cart parse error:", error);
                 setCartCount(0);
             }
         };

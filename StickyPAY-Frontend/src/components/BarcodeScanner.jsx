@@ -1,21 +1,30 @@
-import React, { useEffect, useRef } from "react";
-import { Html5Qrcode } from "html5-qrcode";
-import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Html5QrcodeSupportedFormats } from "html5-qrcode";
+// ==========================================================
+// 📦 BarcodeScanner.jsx
+// Stable version - No double stop() crash
+// ==========================================================
 
-formatsToSupport: [
-  Html5QrcodeSupportedFormats.EAN_13,
-  Html5QrcodeSupportedFormats.EAN_8,
-  Html5QrcodeSupportedFormats.CODE_128,
-]
+import React, { useEffect, useRef, useState } from "react";
+import { Html5Qrcode } from "html5-qrcode";
+import { X, Zap, ZapOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 export default function BarcodeScanner({
   onScan,
   onClose,
   storeName,
   scanType = "barcode",
 }) {
+  // ==================================================
+  // 🔹 Refs & State
+  // ==================================================
+
   const scannerRef = useRef(null);
+  const [flashOn, setFlashOn] = useState(false);
+  const [hasFlash, setHasFlash] = useState(true);
+
+  // ==================================================
+  // 🔹 Start Scanner
+  // ==================================================
 
   useEffect(() => {
     const html5QrCode = new Html5Qrcode("reader");
@@ -29,11 +38,10 @@ export default function BarcodeScanner({
           qrbox: { width: 250, height: 250 },
         },
         (decodedText) => {
-          html5QrCode.stop().then(() => {
-            onScan(decodedText);
-          });
+          // Just trigger parent close
+          onScan(decodedText);
         },
-        () => {}
+        () => { }
       )
       .catch((err) => {
         console.error("Camera start error:", err);
@@ -41,76 +49,141 @@ export default function BarcodeScanner({
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
+        try {
+          const state = scannerRef.current.getState();
+
+          // Only stop if actively scanning
+          if (state === 2) {
+            scannerRef.current.stop().then(() => {
+              scannerRef.current.clear();
+            });
+          }
+        } catch (err) {
+          console.log("Scanner already cleaned");
+        }
       }
     };
-  }, []);
+  }, [onScan]);
+
+  // ==================================================
+  // 🔦 Toggle Flash
+  // ==================================================
+
+  const toggleFlash = async () => {
+    if (!scannerRef.current) return;
+
+    try {
+      const newState = !flashOn;
+
+      await scannerRef.current.applyVideoConstraints({
+        advanced: [{ torch: newState }],
+      });
+
+      setFlashOn(newState);
+    } catch (err) {
+      console.log("Flash not supported");
+    }
+  };
+
+  // ==================================================
+  // 🎨 UI
+  // ==================================================
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
-      {/* Header */}
+
+      {/* ================= Header ================= */}
       <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/80 to-transparent">
         <div className="flex items-center justify-between">
-          <div className="flex-1">
-            {storeName && (
-              <div className="text-left">
+          <div>
+            {storeName ? (
+              <>
                 <p className="text-gray-400 text-xs">Shopping at</p>
                 <h2 className="text-yellow-400 font-bold text-lg">
                   {storeName}
                 </h2>
-              </div>
-            )}
-            {!storeName && scanType === "store" && (
+              </>
+            ) : (
               <h2 className="text-white font-semibold">
-                Scan Store QR Code
-              </h2>
-            )}
-            {!storeName && scanType !== "store" && (
-              <h2 className="text-white font-semibold">
-                Scan Product Barcode
+                {scanType === "store"
+                  ? "Scan Store QR Code"
+                  : "Scan Product Barcode"}
               </h2>
             )}
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="text-white hover:bg-white/10"
-          >
-            <X className="w-6 h-6" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {hasFlash && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleFlash}
+                className="text-white hover:bg-white/10"
+              >
+                {flashOn ? (
+                  <Zap className="w-6 h-6 text-yellow-400" />
+                ) : (
+                  <ZapOff className="w-6 h-6" />
+                )}
+              </Button>
+            )}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="text-white hover:bg-white/10"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Scanner Container */}
+      {/* ================= Scanner Area ================= */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative">
-          {/* This div is where html5-qrcode renders camera */}
-          <div id="reader" className="w-64 h-64 overflow-hidden rounded-2xl" />
 
-          {/* Overlay Frame */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="w-64 h-64 border-2 border-yellow-400 rounded-2xl relative">
-              {/* Corner accents */}
-              <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-green-500 rounded-tl-xl" />
-              <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-green-500 rounded-tr-xl" />
-              <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-green-500 rounded-bl-xl" />
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-green-500 rounded-br-xl" />
+        {/* ===== STORE QR SCANNER (Full Square) ===== */}
+        {scanType === "store" && (
+          <div className="relative w-64 h-64">
+            <div id="reader" className="w-full h-full rounded-2xl overflow-hidden" />
 
-              {/* Animated scan line */}
-              <div
-                className="absolute inset-x-4 top-4 h-0.5 bg-gradient-to-r from-transparent via-yellow-400 to-transparent"
-                style={{ animation: "scan 2s ease-in-out infinite" }}
-              />
-            </div>
+            <div className="absolute inset-0 border-2 border-yellow-400 rounded-2xl" />
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Bottom Controls */}
+        {/* ===== BARCODE SCANNER (Small Rectangle) ===== */}
+        {scanType === "barcode" && (
+          <div className="relative w-[90%] max-w-md h-32">
+
+            <div
+              id="reader"
+              className="w-full h-full rounded-lg overflow-hidden"
+            />
+
+            {/* Border */}
+            <div className="absolute inset-0 border-2 border-yellow-400 rounded-lg" />
+
+            {/* Corner Accents */}
+            <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-green-500" />
+            <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-green-500" />
+            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-green-500" />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-green-500" />
+
+            {/* Horizontal Scan Line */}
+            <div
+              className="absolute left-0 right-0 h-0.5 bg-yellow-400"
+              style={{ animation: "scan-horizontal 2s linear infinite" }}
+            />
+
+          </div>
+        )}
+
+</div>
+
+      {/* ================= Bottom Info ================= */}
       <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-        <p className="text-gray-400 text-center text-sm mb-4">
+        <p className="text-gray-400 text-center text-sm">
           {scanType === "store"
             ? "Position the store QR code within the frame"
             : "Point at product barcode to scan"}
