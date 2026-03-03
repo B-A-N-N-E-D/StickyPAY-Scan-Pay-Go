@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from "../lib/utils";
-import { ShoppingCart, Trash2, Plus, Minus, Tag, ChevronDown, ChevronUp, Coins } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, Tag, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCart, clearCart, saveCart, saveOrder, getTokens, redeemTokens as redeemTokensFn, awardTokens } from '../components/localData';
 import QRReceipt from '../components/QRReceipt';
 import PaymentSheet from '../components/PaymentSheet';
+import { StoreContext } from "@/lib/StoreContext";
 
 export default function Cart() {
   const navigate = useNavigate();
+  const { activeStore, clearStore } = useContext(StoreContext);
   const [cartData, setCartData] = useState(null);
   const [items, setItems] = useState([]);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
@@ -38,7 +40,6 @@ export default function Cart() {
     setUserTokens(getTokens());
   }, []);
 
-  // Keep localStorage in sync when items change
   const updateItems = (updated) => {
     setItems(updated);
     if (cartData) {
@@ -72,7 +73,7 @@ export default function Cart() {
     return Math.max(0, amt - (amt * appliedCoupon.value) / 100);
   };
 
-  const coinDiscount = redeemCoins ? Math.min(userTokens.total, totalAmount * 0.5) : 0; // max 50% off with coins
+  const coinDiscount = redeemCoins ? Math.min(userTokens.total, totalAmount * 0.5) : 0;
 
   const applyCoupon = (code) => {
     const c = COUPONS.find(c => c.code === (code || couponInput).toUpperCase());
@@ -90,8 +91,8 @@ export default function Cart() {
     if (redeemCoins && coinDiscount > 0) redeemTokensFn(coinDiscount);
     const finalAmount = Math.max(0, applyDiscount(totalAmount) - coinDiscount);
     const newOrder = saveOrder({
-      store_id: cartData?.store?.id || 'demo',
-      store_name: cartData?.store?.name || 'Demo Store',
+      store_id: activeStore?.id || 'unknown',
+      store_name: activeStore?.name || 'Store',
       items: items.map(item => ({
         product_id: item.id,
         name: item.name,
@@ -102,8 +103,7 @@ export default function Cart() {
       payment_method: method,
     });
     clearCart();
-    localStorage.removeItem('sp_active_store');
-    // Award tokens for this order
+    clearStore();
     const { earned } = awardTokens(newOrder.id, finalAmount);
     newOrder._tokensEarned = earned;
     setOrder(newOrder);
@@ -132,7 +132,7 @@ export default function Cart() {
           </div>
           <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
           <p className="text-gray-400 text-center mb-6 text-sm">Scan products from the Scanner tab to add them here</p>
-          <Button onClick={() => navigate(createPageUrl('Scanner'))} className="bg-yellow-400 text-black font-semibold">
+          <Button onClick={() => navigate(createPageUrl('Scanner'))} className="bg-yellow-400 text-black font-semibold px-8 py-3 rounded-xl">
             Go to Scanner
           </Button>
         </div>
@@ -142,59 +142,75 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="px-6 pt-6 pb-4">
+      {/* Header */}
+      <div className="px-5 pt-6 pb-4">
         <h1 className="text-2xl font-bold">Cart</h1>
-        <p className="text-gray-400 mt-1 text-sm">{totalItems} items · {cartData?.store?.name}</p>
+        <p className="text-gray-400 mt-0.5 text-sm">{totalItems} item{totalItems !== 1 ? 's' : ''} · {activeStore?.name || 'No Store'}</p>
       </div>
 
-      <div className="px-6 space-y-3">
+      {/* Items */}
+      <div className="px-5 space-y-3">
         {items.map((item) => (
-          <div key={item.id} className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
-            <div className="flex items-start justify-between gap-3">
+          <div key={item.id} className="bg-[#0f1117] rounded-2xl p-4 border border-gray-800/70">
+            <div className="flex items-start gap-3">
+              {/* Left: info */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm">{item.name}</h3>
-                {item.brand && <p className="text-gray-500 text-xs">{item.brand}{item.weight ? ` · ${item.weight}` : ''}{item.category ? ` · ${item.category}` : ''}</p>}
-                <p className="text-yellow-400 font-semibold text-sm mt-0.5">₹{item.price.toFixed(2)} each</p>
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                <h3 className="font-bold text-sm text-white">{item.name}</h3>
+                {(item.brand || item.weight || item.category) && (
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    {[item.brand, item.weight, item.category].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                <p className="text-yellow-400 font-semibold text-sm mt-1">₹{item.price.toFixed(2)} each</p>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5">
                   {item.barcode && <p className="text-gray-600 text-xs font-mono">🔖 {item.barcode}</p>}
                   {item.mfg_date && <p className="text-gray-500 text-xs">MFG: {item.mfg_date}</p>}
                   {item.exp_date && <p className="text-gray-500 text-xs">EXP: {item.exp_date}</p>}
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-2">
+
+              {/* Right: qty controls + delete */}
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
                 <div className="flex items-center gap-1 bg-gray-800 rounded-xl p-1">
-                  <button onClick={() => updateQuantity(item.id, -1)} className="w-7 h-7 rounded-lg bg-gray-700 flex items-center justify-center">
+                  <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-6 text-center font-semibold text-sm">{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, 1)} className="w-7 h-7 rounded-lg bg-gray-700 flex items-center justify-center">
+                  <span className="w-7 text-center font-bold text-sm">{item.quantity}</span>
+                  <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <button onClick={() => removeItem(item.id)} className="w-8 h-8 rounded-xl bg-red-500/20 flex items-center justify-center text-red-400">
-                  <Trash2 className="w-3.5 h-3.5" />
+                <button onClick={() => removeItem(item.id)} className="w-8 h-8 rounded-xl bg-red-500/20 hover:bg-red-500/30 flex items-center justify-center transition-colors">
+                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
                 </button>
               </div>
             </div>
-            <div className="text-right mt-2 text-gray-400 text-xs border-t border-gray-800 pt-2">
+
+            {/* Subtotal row */}
+            <div className="text-right mt-2 text-xs text-gray-500 border-t border-gray-800 pt-2">
               Subtotal: <span className="text-white font-semibold">₹{(item.price * item.quantity).toFixed(2)}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Coupons */}
-      <div className="px-6 mt-5">
-        <button onClick={() => setShowCoupons(!showCoupons)} className="w-full flex items-center justify-between bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
+      {/* Apply Coupon */}
+      <div className="px-5 mt-4">
+        <button
+          onClick={() => setShowCoupons(!showCoupons)}
+          className="w-full flex items-center justify-between bg-[#0f1117] border border-gray-800/70 rounded-xl px-4 py-3.5"
+        >
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-medium">{appliedCoupon ? `"${appliedCoupon.code}" applied` : 'Apply Coupon'}</span>
+            <span className="text-sm font-medium">
+              {appliedCoupon ? `"${appliedCoupon.code}" applied` : 'Apply Coupon'}
+            </span>
           </div>
           {showCoupons ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
         </button>
 
         {showCoupons && (
-          <div className="bg-gray-900 border border-gray-800 border-t-0 rounded-b-xl px-4 pb-4">
+          <div className="bg-[#0f1117] border border-gray-800/70 border-t-0 rounded-b-xl px-4 pb-4">
             <div className="flex gap-2 pt-3 mb-3">
               <input
                 value={couponInput}
@@ -202,14 +218,16 @@ export default function Cart() {
                 placeholder="Enter code"
                 className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 outline-none"
               />
-              <button onClick={() => applyCoupon()} className="bg-yellow-400 text-black font-semibold px-4 rounded-xl text-sm">Apply</button>
+              <button onClick={() => applyCoupon()} className="bg-yellow-400 text-black font-semibold px-4 rounded-xl text-sm">
+                Apply
+              </button>
             </div>
             {couponError && <p className="text-red-400 text-xs mb-2">{couponError}</p>}
             <p className="text-gray-500 text-xs mb-2">Available coupons:</p>
             <div className="space-y-2">
               {COUPONS.map(c => (
                 <button key={c.code} onClick={() => applyCoupon(c.code)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border text-left ${appliedCoupon?.code === c.code ? 'border-yellow-400 bg-yellow-400/10' : 'border-gray-700 bg-gray-800'}`}>
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-left ${appliedCoupon?.code === c.code ? 'border-yellow-400 bg-yellow-400/10' : 'border-gray-700 bg-gray-800'}`}>
                   <div>
                     <span className="font-mono font-bold text-yellow-400 text-xs tracking-widest">{c.code}</span>
                     <p className="text-gray-400 text-xs mt-0.5">{c.desc}</p>
@@ -223,11 +241,11 @@ export default function Cart() {
       </div>
 
       {/* Bill Summary */}
-      <div className="px-6 mt-4">
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-400">Subtotal</span>
-            <span>₹{totalAmount.toFixed(2)}</span>
+      <div className="px-5 mt-4">
+        <div className="bg-[#0f1117] rounded-2xl border border-gray-800/70 p-4 space-y-2 text-sm">
+          <div className="flex justify-between text-gray-400">
+            <span>Subtotal</span>
+            <span className="text-white">₹{totalAmount.toFixed(2)}</span>
           </div>
           {appliedCoupon && (
             <div className="flex justify-between text-green-400">
@@ -241,7 +259,7 @@ export default function Cart() {
               <span>-₹{coinDiscount.toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between font-bold border-t border-gray-700 pt-2">
+          <div className="flex justify-between font-bold border-t border-gray-700 pt-2 text-base">
             <span>Total</span>
             <span className="text-yellow-400">₹{Math.max(0, applyDiscount(totalAmount) - coinDiscount).toFixed(2)}</span>
           </div>
@@ -250,24 +268,29 @@ export default function Cart() {
 
       {/* StickyCoins */}
       {userTokens.total > 0 && (
-        <div className="px-6 mt-3">
-          <button onClick={() => setRedeemCoins(!redeemCoins)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border ${redeemCoins ? 'border-yellow-400 bg-yellow-400/10' : 'border-gray-700 bg-gray-900'}`}>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🪙</span>
-              <div className="text-left">
-                <p className="text-sm font-semibold text-yellow-400">{userTokens.total.toFixed(2)} StickyCoins</p>
-                <p className="text-gray-400 text-xs">Tap to {redeemCoins ? 'remove' : 'redeem'} (save ₹{Math.min(userTokens.total, totalAmount * 0.5).toFixed(2)})</p>
-              </div>
+        <div className="px-5 mt-3">
+          <button
+            onClick={() => setRedeemCoins(!redeemCoins)}
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-colors ${redeemCoins ? 'border-yellow-400 bg-yellow-400/10' : 'border-gray-700 bg-[#0f1117]'}`}
+          >
+            <span className="text-2xl">🪙</span>
+            <div className="text-left flex-1">
+              <p className="text-sm font-semibold text-yellow-400">{userTokens.total.toFixed(2)} StickyCoins</p>
+              <p className="text-gray-400 text-xs">
+                Tap to {redeemCoins ? 'remove' : 'redeem'} (save ₹{Math.min(userTokens.total, totalAmount * 0.5).toFixed(2)})
+              </p>
             </div>
             {redeemCoins && <span className="text-xs text-green-400 font-semibold">Applied ✓</span>}
           </button>
         </div>
       )}
 
-      {/* Checkout Button */}
-      <div className="px-6 mt-4 mb-32">
-        <Button onClick={() => setShowPaymentSheet(true)} className="w-full bg-green-500 text-black font-semibold py-6 rounded-xl">
+      {/* Proceed to Pay */}
+      <div className="px-5 mt-5 mb-32">
+        <Button
+          onClick={() => setShowPaymentSheet(true)}
+          className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-6 rounded-2xl text-base"
+        >
           Proceed to Pay · ₹{Math.max(0, applyDiscount(totalAmount) - coinDiscount).toFixed(2)}
         </Button>
       </div>
