@@ -1,64 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Smartphone, Plus, Trash2, Star, Lock, Eye } from 'lucide-react';
-import { getPaymentMethods, savePaymentMethods, getPin, savePin } from '../components/localData';
+import { getPaymentMethods, savePaymentMethods, getPin } from '../components/localData';
 import { Button } from '@/components/ui/button';
-
-function PinPad({ title, onSuccess, onCancel, isSetup }) {
-  const [pin, setPin] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [step, setStep] = useState(isSetup ? 'set' : 'verify');
-  const [error, setError] = useState('');
-
-  const handleDigit = (d) => {
-    if (step === 'set' && pin.length < 4) {
-      const np = pin + d; setPin(np);
-      if (np.length === 4) setStep('confirm');
-    } else if (step === 'confirm' && confirm.length < 4) {
-      const nc = confirm + d; setConfirm(nc);
-      if (nc.length === 4) {
-        if (nc === pin) { savePin(nc); onSuccess(); }
-        else { setError('PINs do not match'); setConfirm(''); }
-      }
-    } else if (step === 'verify' && pin.length < 4) {
-      const np = pin + d; setPin(np);
-      if (np.length === 4) {
-        if (getPin() === np) onSuccess();
-        else { setError('Incorrect PIN'); setPin(''); }
-      }
-    }
-  };
-
-  const del = () => step === 'confirm' ? setConfirm(c => c.slice(0, -1)) : setPin(p => p.slice(0, -1));
-  const current = step === 'confirm' ? confirm : pin;
-  const label = step === 'set' ? 'Create 4-digit PIN' : step === 'confirm' ? 'Confirm PIN' : 'Enter Security PIN';
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-      <div className="bg-gray-900 rounded-3xl p-6 w-80 border border-gray-700">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-white">{title}</h3>
-          <button onClick={onCancel} className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400">✕</button>
-        </div>
-        <p className="text-center text-gray-400 text-sm mb-4">{label}</p>
-        <div className="flex justify-center gap-3 mb-6">
-          {[0, 1, 2, 3].map(i => (
-            <div key={i} className={`w-4 h-4 rounded-full border-2 ${current.length > i ? 'bg-yellow-400 border-yellow-400' : 'border-gray-600'}`} />
-          ))}
-        </div>
-        {error && <p className="text-red-400 text-xs text-center mb-3">{error}</p>}
-        <div className="grid grid-cols-3 gap-3">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((d, i) => (
-            <button key={i} onClick={() => d === '⌫' ? del() : d !== '' && handleDigit(String(d))}
-              className={`h-14 rounded-2xl font-bold text-lg ${d === '' ? '' : 'bg-gray-800 text-white active:bg-gray-700'}`}>
-              {d}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+import PinPad from '../components/PinPad';
 
 export default function PaymentMethods() {
   const navigate = useNavigate();
@@ -67,6 +12,8 @@ export default function PaymentMethods() {
   const [newMethod, setNewMethod] = useState({ type: 'card', name: '', last4: '', upiId: '' });
   const [unlocked, setUnlocked] = useState(false);
   const [showPin, setShowPin] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [pinAction, setPinAction] = useState('unlock'); // unlock or delete
   const hasPin = !!getPin();
 
   useEffect(() => { setMethods(getPaymentMethods()); }, []);
@@ -81,6 +28,12 @@ export default function PaymentMethods() {
   };
 
   const remove = (id) => {
+    if (!unlocked) {
+      setPinAction('delete');
+      setPendingDelete(id);
+      setShowPin(true);
+      return;
+    }
     save(methods.filter(m => m.id !== id));
   };
 
@@ -104,8 +57,19 @@ export default function PaymentMethods() {
         <PinPad
           title={hasPin ? 'Enter Security PIN' : 'Set Security PIN'}
           isSetup={!hasPin}
-          onSuccess={() => { setUnlocked(true); setShowPin(false); }}
-          onCancel={() => setShowPin(false)}
+          onSuccess={() => {
+            setUnlocked(true);
+            setShowPin(false);
+            if (pinAction === 'delete' && pendingDelete) {
+              save(methods.filter(m => m.id !== pendingDelete));
+              setPendingDelete(null);
+            }
+          }}
+          onCancel={() => {
+            setShowPin(false);
+            setPendingDelete(null);
+            setPinAction('unlock');
+          }}
         />
       )}
 

@@ -16,11 +16,11 @@ const KEYS = {
 export const getUser = () => {
     const saved = localStorage.getItem(KEYS.USER);
     if (saved) return JSON.parse(saved);
-    return { full_name: 'Guest User', email: 'guest@stickypay.app', phone: '' };
+    return null;
 };
 
 export const saveUser = (data) => {
-    const current = getUser();
+    const current = getUser() || {};
     const updated = { ...current, ...data };
     localStorage.setItem(KEYS.USER, JSON.stringify(updated));
     return updated;

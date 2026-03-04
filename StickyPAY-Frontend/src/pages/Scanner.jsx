@@ -35,15 +35,29 @@ export default function Scanner() {
 
         // ── Store QR scan ─────────────────────────────────────────────
         if (scanType === 'store' || !activeStore) {
-            const storeData = {
-                id: decodedText,
-                name: decodedText,
-            };
-            saveStore(storeData);
-            const newCart = { store: storeData, items: [], total: 0 };
-            saveCart(newCart);
-            setCart(newCart);
-            toast.success(`Entered ${decodedText}`, { description: 'Now scan product barcodes' });
+            setLoading(true);
+            try {
+                // Fetch store details from database
+                const storeRes = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/${decodedText}`);
+                let storeData;
+                if (storeRes.ok) {
+                    storeData = await storeRes.json();
+                } else {
+                    storeData = { id: decodedText, name: decodedText.replace(/_/g, ' ').toUpperCase() || 'Store' };
+                }
+                saveStore(storeData);
+                const newCart = { store: storeData, items: [], total: 0 };
+                saveCart(newCart);
+                setCart(newCart);
+                toast.success(`Entered ${storeData.name}`, { description: 'Now scan product barcodes' });
+            } catch (err) {
+                const fallbackStore = { id: decodedText, name: decodedText };
+                saveStore(fallbackStore);
+                saveCart({ store: fallbackStore, items: [], total: 0 });
+                toast.success('Store Set', { description: 'Now scan products' });
+            } finally {
+                setLoading(false);
+            }
             return;
         }
 
@@ -54,6 +68,14 @@ export default function Scanner() {
 
             if (res.ok) {
                 const product = await res.json();
+
+                // Verify if it is from this store or not
+                if (product.store_id && String(product.store_id) !== String(activeStore.id)) {
+                    toast.error('Invalid Product', { description: 'This product belongs to a different store' });
+                    setLoading(false);
+                    return;
+                }
+
                 let currentCart = getCart() || { store: activeStore, items: [], total: 0 };
 
                 const existing = currentCart.items.find(i => i.barcode === decodedText || i.id === product.id);
@@ -76,6 +98,14 @@ export default function Scanner() {
                 currentCart.total = currentCart.items.reduce((s, i) => s + (i.price * i.quantity), 0);
                 saveCart(currentCart);
                 setCart({ ...currentCart });
+
+                // Optional UI fetch call representation (if backend implements cart sync)
+                fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_id: product.id, quantity: 1, action: 'add' })
+                }).catch(() => { });
+
                 toast.success(`Added "${product.name}"`, { description: `₹${product.price}` });
             } else if (res.status === 404) {
                 toast.error('Product not found', { description: `Barcode: ${decodedText}` });

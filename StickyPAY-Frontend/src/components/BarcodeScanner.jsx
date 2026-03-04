@@ -4,7 +4,7 @@
 // ==========================================================
 
 import React, { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { X, Zap, ZapOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,7 +35,19 @@ export default function BarcodeScanner({
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          qrbox: { width: window.innerWidth > 400 ? 300 : 250, height: scanType === "store" ? 250 : 150 },
+          formatsToSupport: scanType === "store"
+            ? [Html5QrcodeSupportedFormats.QR_CODE]
+            : [
+              Html5QrcodeSupportedFormats.QR_CODE,
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.ITF
+            ]
         },
         (decodedText) => {
           // Just trigger parent close
@@ -65,9 +77,9 @@ export default function BarcodeScanner({
     };
   }, [onScan]);
 
-  // ==================================================
+  // ======================================================
   // 🔦 Toggle Flash
-  // ==================================================
+  // ======================================================
 
   const toggleFlash = async () => {
     if (!scannerRef.current) return;
@@ -154,32 +166,31 @@ export default function BarcodeScanner({
 
         {/* ===== BARCODE SCANNER (Small Rectangle) ===== */}
         {scanType === "barcode" && (
-          <div className="relative w-[90%] max-w-md h-32">
+          <div className="relative w-[90%] max-w-md h-40">
 
             <div
               id="reader"
-              className="w-full h-full rounded-lg overflow-hidden"
+              className="w-full h-full rounded-xl overflow-hidden [&_video]:object-cover"
             />
 
-            {/* Border */}
-            <div className="absolute inset-0 border-2 border-yellow-400 rounded-lg" />
+            {/* Border removed as it overlapped with corners */}
 
             {/* Corner Accents */}
-            <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-green-500" />
-            <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-green-500" />
-            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-green-500" />
-            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-green-500" />
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-500 rounded-tl-xl" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-500 rounded-tr-xl" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-green-500 rounded-bl-xl" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-green-500 rounded-br-xl" />
 
-            {/* Horizontal Scan Line */}
+            {/* Vertical Scan Line (moving horizontally) */}
             <div
-              className="absolute left-0 right-0 h-0.5 bg-yellow-400"
-              style={{ animation: "scan-horizontal 2s linear infinite" }}
+              className="absolute top-4 bottom-4 w-[2px] bg-yellow-400 shadow-[0_0_8px_2px_rgba(250,204,21,0.5)] z-10"
+              style={{ animation: "scan-horizontal 2s ease-in-out infinite alternate" }}
             />
 
           </div>
         )}
 
-</div>
+      </div>
 
       {/* ================= Bottom Info ================= */}
       <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
@@ -190,11 +201,14 @@ export default function BarcodeScanner({
         </p>
       </div>
 
-      {/* Animation */}
+      {/* Animation & Overrides */}
       <style>{`
-        @keyframes scan {
-          0%, 100% { transform: translateY(0); opacity: 1; }
-          50% { transform: translateY(230px); opacity: 0.5; }
+        #qr-shaded-region {
+          display: none !important;
+        }
+        @keyframes scan-horizontal {
+          0% { left: 5%; opacity: 0.8; }
+          100% { left: 95%; opacity: 0.8; }
         }
       `}</style>
     </div>

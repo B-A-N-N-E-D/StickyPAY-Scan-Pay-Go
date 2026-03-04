@@ -58,6 +58,7 @@ import PaymentMethods from './pages/PaymentMethods';
 import Profile from './pages/Profile';
 import Scanner from './pages/Scanner';
 import WalletPage from './pages/WalletPage';
+import Login from './pages/Login';
 import __Layout from './Layout.jsx';
 
 export const PAGES = {
@@ -72,6 +73,7 @@ export const PAGES = {
     "Profile": Profile,
     "Scanner": Scanner,
     "WalletPage": WalletPage,
+    "Login": Login,
 }
 
 export const pagesConfig = {
