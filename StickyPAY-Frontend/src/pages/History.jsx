@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Receipt, ChevronDown, ChevronUp, CreditCard, Wallet, Smartphone, Store, CheckCircle2, Package, Download, ShieldCheck, Clock } from 'lucide-react';
+import { Receipt, ChevronDown, ChevronUp, CreditCard, Wallet, Smartphone, Store, CheckCircle2, Package, Download, ShieldCheck, Clock, X } from 'lucide-react';
 import { getOrders } from '../components/localData';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 
 // Mini QR for history
-function MiniQR({ data }) {
-  const SIZE = 80;
+function MiniQR({ data, size = 80 }) {
+  const SIZE = size;
   const MODULES = 25;
   const CELL = SIZE / MODULES;
   const seeded = useMemo(() => {
@@ -76,6 +76,7 @@ const downloadInvoice = (order) => {
 export default function History() {
   const [orders, setOrders] = useState([]);
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [enlargedQr, setEnlargedQr] = useState(null);
 
   useEffect(() => {
     setOrders(getOrders());
@@ -133,7 +134,13 @@ export default function History() {
               <div className="border-t border-gray-800 px-4 pt-4 pb-4 space-y-4">
                 {/* QR Code */}
                 <div className={`flex items-center gap-4 bg-gray-800 rounded-xl p-3 border ${order.status === 'verified' ? 'border-blue-500/40' : 'border-orange-500/30'}`}>
-                  <div className="bg-white rounded-lg p-1 flex-shrink-0">
+                  <div
+                    className="bg-white rounded-lg p-1 flex-shrink-0 cursor-pointer hover:opacity-90 active:scale-95 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEnlargedQr({ data: order.qr_code_data || order.id, status: order.status });
+                    }}
+                  >
                     <MiniQR data={order.qr_code_data || order.id} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -225,6 +232,43 @@ export default function History() {
           </div>
         ))}
       </div>
+
+      {/* Enlarged QR Modal */}
+      {enlargedQr && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6"
+          onClick={() => setEnlargedQr(null)}
+        >
+          <div
+            className="bg-gray-900 border border-gray-700 p-8 rounded-3xl flex flex-col items-center justify-center max-w-sm w-full relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setEnlargedQr(null)}
+              className="absolute top-4 right-4 bg-gray-800 p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-xl font-bold mb-6 text-white text-center">Security QR Code</h3>
+
+            <div className={`bg-white p-4 rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] mb-6 ${enlargedQr.status === 'verified' ? 'ring-4 ring-blue-500' : 'ring-4 ring-orange-500'}`}>
+              <MiniQR data={enlargedQr.data} size={220} />
+            </div>
+
+            <p className="text-gray-400 font-mono text-sm mb-4 text-center break-all">{enlargedQr.data}</p>
+
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold ${enlargedQr.status === 'verified' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'}`}>
+              {enlargedQr.status === 'verified' ? <ShieldCheck className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+              {enlargedQr.status === 'verified' ? 'Security Verified' : 'Pending Security Check'}
+            </div>
+
+            <p className="text-gray-500 text-xs text-center mt-6">
+              Show this QR code to the security personnel at the exit gate for verification.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

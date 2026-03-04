@@ -48,11 +48,21 @@ export default function Cart() {
     }
   };
 
+  const syncCartWithDB = (productId, newQty, action) => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, quantity: newQty, action })
+    }).catch(() => { });
+  };
+
   const updateQuantity = (itemId, delta) => {
     updateItems(
       items.map(item => {
         if (item.id === itemId) {
           const newQty = Math.max(0, item.quantity + delta);
+          if (newQty > 0) syncCartWithDB(item.id, newQty, 'update');
+          else syncCartWithDB(item.id, 0, 'remove');
           return newQty === 0 ? null : { ...item, quantity: newQty };
         }
         return item;
@@ -61,6 +71,7 @@ export default function Cart() {
   };
 
   const removeItem = (itemId) => {
+    syncCartWithDB(itemId, 0, 'remove');
     updateItems(items.filter(item => item.id !== itemId));
   };
 

@@ -51,7 +51,7 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Top Logo */}
             <div className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-lg border-b border-gray-800/50">
-                <div className="flex items-center justify-center py-3">
+                <div className="flex items-center justify-center py-3 w-full px-4">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-green-500 flex items-center justify-center">
                             <span className="text-black font-bold text-sm">S</span>
@@ -106,11 +106,12 @@ export default function Layout({ children, currentPageName }) {
                 }
             `}</style>
 
-            <div className="pt-14 pb-24">
+            <div className={`pt-14 w-full relative min-h-screen ${currentPageName !== "Login" ? "pb-24" : ""}`}>
                 {children}
             </div>
-
-            <BottomNav cartCount={cartCount} />
+            {currentPageName !== "Login" && (
+                <BottomNav cartCount={cartCount} />
+            )}    
         </div>
     );
 }

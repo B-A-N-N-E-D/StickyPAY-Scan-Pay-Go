@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from "../lib/utils";
 import { User, ShoppingBag, CreditCard, Bell, HelpCircle, ChevronRight, LogOut, Phone, Mail, Edit2, Check, Wallet } from 'lucide-react';
-import { getUser, saveUser, getOrders, getTokens, getWallet } from '../components/localData';
+import { getUser, saveUser, getOrders, getTokens, getWallet, getPin } from '../components/localData';
+import PinPad from '../components/PinPad';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -12,6 +13,8 @@ export default function Profile() {
   const [wallet, setWallet] = useState({ balance: 0 });
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
+  const [showPin, setShowPin] = useState(false);
+  const hasPin = !!getPin();
 
   useEffect(() => {
     const u = getUser();
@@ -159,12 +162,25 @@ export default function Profile() {
 
       {/* Logout */}
       <div className="px-6 mt-4">
-        <button onClick={() => { localStorage.clear(); window.location.reload(); }}
+        <button onClick={() => setShowPin(true)}
           className="w-full flex items-center justify-center gap-2 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 font-medium">
           <LogOut className="w-4 h-4" />
           Log Out
         </button>
       </div>
+
+      {showPin && (
+        <PinPad
+          title={hasPin ? 'Enter PIN to Log Out' : 'Set PIN to Continue'}
+          isSetup={!hasPin}
+          onSuccess={() => {
+            setShowPin(false);
+            localStorage.clear();
+            navigate('/Login');
+          }}
+          onCancel={() => setShowPin(false)}
+        />
+      )}
     </div>
   );
 }

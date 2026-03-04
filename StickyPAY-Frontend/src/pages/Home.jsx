@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from "../lib/utils";
-import { ScanLine, ArrowRight, Sparkles, Tag, Copy, Check, Store, TrendingUp } from 'lucide-react';
+import { ScanLine, ArrowRight, Sparkles, Tag, Copy, Check, Store, TrendingUp, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getUser, getOrders } from '../components/localData';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,13 +26,18 @@ export default function Home() {
   const [copied, setCopied] = useState('');
 
   useEffect(() => {
+    const u = getUser();
+    if (!u || !u.full_name) {
+      navigate(createPageUrl('Login'));
+      return;
+    }
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('Good Morning');
     else if (hour < 18) setGreeting('Good Afternoon');
     else setGreeting('Good Evening');
-    setUser(getUser());
+    setUser(u);
     setOrders(getOrders());
-  }, []);
+  }, [navigate]);
 
   const copy = (code) => {
     navigator.clipboard.writeText(code).catch(() => { });
@@ -152,6 +157,49 @@ export default function Home() {
           </motion.div>
         </div>
       </motion.div>
+
+      {/* Recent Activity Section */}
+      {orders.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="px-6 mt-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <History className="w-5 h-5 text-yellow-400" /> Recent Activity
+            </h3>
+            <button
+              onClick={() => navigate(createPageUrl('History'))}
+              className="text-yellow-400 text-xs font-medium flex items-center gap-1"
+            >
+              See All <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="space-y-3">
+            {orders.slice(0, 3).map((order) => (
+              <div key={order.id} className="bg-gray-900 rounded-2xl p-4 border border-gray-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-yellow-400/10 rounded-xl flex items-center justify-center">
+                    <Store className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">{order.store_name || 'Store'}</h4>
+                    <p className="text-gray-500 text-xs mt-0.5">{new Date(order.date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-white">₹{order.total_amount.toFixed(2)}</p>
+                  <p className="text-green-500 text-xs font-medium flex items-center gap-1 justify-end">
+                    <Check className="w-3 h-3" /> Paid
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Offers Section */}
       <motion.div
