@@ -4,20 +4,26 @@ import { supabase } from "../config/supabase.js";
 const router = express.Router();
 
 // Add product
-router.post("/", async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('products')
-            .insert([req.body])
-            .select()
-            .single();
+router.get("/:barcode", async (req, res) => {
+  const { barcode } = req.params;
 
-        if (error) throw error;
+  const { data, error } = await supabase
+    .from("products")
+    .select(`
+      *,
+      store_products (
+        stock,
+        store_id
+      )
+    `)
+    .eq("barcode", barcode)
+    .single();
 
-        res.status(201).json(data);
-    } catch (error) {
-        res.status(400).json({ message: error.message || 'Error creating product' });
-    }
+  if (error || !data) {
+    return res.status(404).json({ error: "Product not found" });
+  }
+
+  res.json(data);
 });
 
 // Get product by barcode
