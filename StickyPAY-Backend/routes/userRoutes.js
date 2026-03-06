@@ -1,5 +1,6 @@
 import express from "express";
 import { supabase } from "../config/supabase.js";
+import crypto from "crypto";
 
 const router = express.Router();
 
@@ -34,11 +35,12 @@ router.post("/login", async (req, res) => {
 
         // New user, insert data
         const newUser = {
-            full_name,
-            phone,
-            email: email || null,
-            address: address || null
-        };
+          id: crypto.randomUUID(),
+          full_name,
+          phone,
+          email: email || null,
+          address: address || null
+};
 
         const { data: insertedUser, error: insertError } = await supabase
             .from('profiles')
