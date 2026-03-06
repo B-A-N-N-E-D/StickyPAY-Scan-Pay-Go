@@ -41,9 +41,7 @@ export default function BarcodeScanner({
             ? { width: 250, height: 250 }
             : { width: 300, height: 120 },
           videoConstraints: {
-            facingMode:{ exact: "environment"},
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
+            facingMode: "environment",
           },
           formatsToSupport: scanType === "store"
             ? [Html5QrcodeSupportedFormats.QR_CODE]
