@@ -21,6 +21,7 @@ app.use(express.json());
 app.use("/api/profiles", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/scan", scanRoutes);
+app.use("/api/users", userRoutes);
 
 // ── Health check
 app.get("/", (req, res) => {
