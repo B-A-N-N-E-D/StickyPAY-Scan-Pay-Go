@@ -21,6 +21,7 @@ export default function BarcodeScanner({
   const scannerRef = useRef(null);
   const [flashOn, setFlashOn] = useState(false);
   const [hasFlash, setHasFlash] = useState(true);
+  const [scanned, setScanned] = useState(false);
 
   // ==================================================
   // 🔹 Start Scanner
@@ -34,13 +35,13 @@ export default function BarcodeScanner({
       .start(
         { facingMode: "environment" },
         {
-          fps: 10,
+          fps: 15,
           aspectRatio: 1.777,
           qrbox: scanType === "store"
             ? { width: 250, height: 250 }
             : { width: 300, height: 120 },
           videoConstraints: {
-            facingMode: "environment",
+            facingMode:{ exact: "environment"},
             width: { ideal: 1920 },
             height: { ideal: 1080 }
           },
@@ -86,7 +87,7 @@ export default function BarcodeScanner({
         }
       }
     };
-  }, [onScan]);
+  }, [onScan, scanType]);
 
   // ======================================================
   // 🔦 Toggle Flash
