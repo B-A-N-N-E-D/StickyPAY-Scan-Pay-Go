@@ -14,7 +14,7 @@ router.post("/login", async (req, res) => {
 
         // Check if user exists by phone
         const { data: existingUser, error: fetchError } = await supabase
-            .from('users')
+            .from('profiles')
             .select('*')
             .eq('phone', phone)
             .maybeSingle();
@@ -41,7 +41,7 @@ router.post("/login", async (req, res) => {
         };
 
         const { data: insertedUser, error: insertError } = await supabase
-            .from('users')
+            .from('profiles')
             .insert([newUser])
             .select()
             .single();
