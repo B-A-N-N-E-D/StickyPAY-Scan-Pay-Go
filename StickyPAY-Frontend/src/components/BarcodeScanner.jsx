@@ -35,23 +35,34 @@ export default function BarcodeScanner({
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: window.innerWidth > 400 ? 300 : 250, height: scanType === "store" ? 250 : 150 },
+          aspectRatio: 1.777,
+          qrbox: scanType === "store"
+            ? { width: 250, height: 250 }
+            : { width: 300, height: 120 },
+          videoConstraints: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
           formatsToSupport: scanType === "store"
             ? [Html5QrcodeSupportedFormats.QR_CODE]
             : [
-              Html5QrcodeSupportedFormats.QR_CODE,
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.UPC_A,
-              Html5QrcodeSupportedFormats.UPC_E,
-              Html5QrcodeSupportedFormats.CODE_128,
-              Html5QrcodeSupportedFormats.CODE_39,
-              Html5QrcodeSupportedFormats.ITF
-            ]
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.CODE_128
+              ]
         },
         (decodedText) => {
-          // Just trigger parent close
-          onScan(decodedText);
+          if (scanned) return;
+
+          setScanned(true);
+
+          const cleanCode = decodedText.trim();
+
+          scannerRef.current.stop().then(() => {
+            onScan(cleanCode);
+          });
         },
         () => { }
       )
@@ -170,7 +181,7 @@ export default function BarcodeScanner({
 
             <div
               id="reader"
-              className="w-full h-full rounded-xl overflow-hidden [&_video]:object-cover"
+              className="w-full h-full rounded-xl overflow-hidden [&_video]:w-full [&_video]:h-full [&_video]:object-cover"
             />
 
             {/* Border removed as it overlapped with corners */}
