@@ -6,7 +6,7 @@ const router = express.Router();
 // 🔍 Verify Store
 router.post("/verify-store", async (req, res) => {
   try {
-    const { store_id } = req.body;
+    const { store_id, user_id } = req.body;
 
     console.log("Received store_id:", store_id);
 
@@ -26,19 +26,21 @@ router.post("/verify-store", async (req, res) => {
       return res.status(400).json({ error: "Invalid Store ID" });
     }
 
-    const { error: scanError } = await supabase
-      .from("scan_history")
-      .insert([
-        {
-          user_id: "dd0b4776-aeef-4c18-bb70-220b98fa6705",
-          store_id: data.store_id,
-          scanned_value: data.store_qr_code,
-          scan_type: "STORE"
-        }
-      ]);
+    if (user_id) {
+      const { error: scanError } = await supabase
+        .from("scan_history")
+        .insert([
+          {
+            user_id,
+            store_id: data.store_id,
+            scanned_value: data.store_qr_code,
+            scan_type: "STORE"
+          }
+        ]);
 
-    if (scanError) {
-      console.error("Scan insert failed:", scanError);
+      if (scanError) {
+        console.error("Scan insert failed:", scanError);
+      }
     }
 
     return res.status(200).json({
