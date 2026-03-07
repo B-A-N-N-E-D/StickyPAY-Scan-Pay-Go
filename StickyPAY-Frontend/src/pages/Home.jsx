@@ -186,11 +186,11 @@ export default function Home() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm">{order.store_name || 'Store'}</h4>
-                    <p className="text-gray-500 text-xs mt-0.5">{new Date(order.date).toLocaleDateString()}</p>
+                    <p className="text-gray-500 text-xs mt-0.5">{order.created_date ? new Date(order.created_date).toLocaleDateString() : 'Unknown date'}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-white">₹{order.total_amount.toFixed(2)}</p>
+                  <p className="font-bold text-white">₹{Number(order.total_amount || 0).toFixed(2)}</p>
                   <p className="text-green-500 text-xs font-medium flex items-center gap-1 justify-end">
                     <Check className="w-3 h-3" /> Paid
                   </p>
