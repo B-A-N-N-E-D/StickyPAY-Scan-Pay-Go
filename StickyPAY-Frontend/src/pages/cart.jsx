@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from "../lib/utils";
 import { ShoppingCart, Trash2, Plus, Minus, Tag, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getCart, clearCart, saveCart, saveOrder, getTokens, redeemTokens as redeemTokensFn, awardTokens } from '../components/localData';
+import { getCart, clearCart, saveCart, saveOrder, getTokens, redeemTokens as redeemTokensFn, awardTokens, getUser } from '../components/localData';
 import QRReceipt from '../components/QRReceipt';
 import PaymentSheet from '../components/PaymentSheet';
 import { StoreContext } from "@/lib/StoreContext";
@@ -23,6 +23,7 @@ export default function Cart() {
   const [showCoupons, setShowCoupons] = useState(false);
   const [redeemCoins, setRedeemCoins] = useState(false);
   const [userTokens, setUserTokens] = useState({ total: 0 });
+  const user = getUser();
 
   const COUPONS = [
     { code: 'SAVE10', desc: '10% off above ₹500', type: 'percent', value: 10, min: 500 },
@@ -49,10 +50,12 @@ export default function Cart() {
   };
 
   const syncCartWithDB = (productId, newQty, action) => {
+    if (!user?.id) return;
+
     fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: productId, quantity: newQty, action })
+      body: JSON.stringify({ user_id: user.id, product_id: productId, quantity: newQty, action })
     }).catch(() => { });
   };
 

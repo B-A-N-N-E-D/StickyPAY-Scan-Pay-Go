@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { StoreContext } from "@/lib/StoreContext";
-import { getCart, saveCart } from "../components/localData";
+import { getCart, getUser, saveCart } from "../components/localData";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../lib/utils";
 import BarcodeScanner from "../components/BarcodeScanner";
@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export default function Scanner() {
-    const { activeStore, saveStore } = useContext(StoreContext);
+    const { activeStore, saveStore, clearStore } = useContext(StoreContext);
     const [isScanning, setIsScanning] = useState(false);
     const [scanType, setScanType] = useState('barcode');
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const currentUser = getUser();
 
     // Refresh cart whenever scanning ends or store changes
     useEffect(() => {
@@ -38,7 +39,7 @@ export default function Scanner() {
             setLoading(true);
             try {
                 // Fetch store details from database
-                const storeRes = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/${decodedText}`);
+                const storeRes = await fetch(`${import.meta.env.VITE_API_URL}/api/stores/${encodeURIComponent(decodedText)}`);
                 let storeData;
                 if (storeRes.ok) {
                     storeData = await storeRes.json();
@@ -70,7 +71,7 @@ export default function Scanner() {
                 const product = await res.json();
 
                 // Verify if it is from this store or not
-                if (product.store_id && String(product.store_id) !== String(activeStore.id)) {
+                if (product.store_id && String(product.store_id) !== String(activeStore?.id)) {
                     toast.error('Invalid Product', { description: 'This product belongs to a different store' });
                     setLoading(false);
                     return;
@@ -100,11 +101,18 @@ export default function Scanner() {
                 setCart({ ...currentCart });
 
                 // Optional UI fetch call representation (if backend implements cart sync)
-                fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: product.id, quantity: 1, action: 'add' })
-                }).catch(() => { });
+                if (currentUser?.id) {
+                    fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: currentUser.id,
+                            product_id: product.id,
+                            quantity: existing ? existing.quantity : 1,
+                            action: existing ? 'update' : 'add'
+                        })
+                    }).catch(() => { });
+                }
 
                 toast.success(`Added "${product.name}"`, { description: `₹${product.price}` });
             } else if (res.status === 404) {
@@ -169,7 +177,7 @@ export default function Scanner() {
                             size="sm"
                             className="text-gray-400 border border-gray-700 bg-transparent hover:text-white hover:bg-gray-800 rounded-xl flex items-center gap-2 font-medium px-3"
                             onClick={() => {
-                                saveStore(null);
+                                clearStore();
                                 saveCart(null);
                                 setCart(null);
                             }}

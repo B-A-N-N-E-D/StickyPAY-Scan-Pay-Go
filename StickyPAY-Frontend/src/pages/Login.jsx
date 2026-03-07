@@ -35,14 +35,10 @@ export default function Login() {
                 navigate(createPageUrl('Home'));
             } else {
                 alert(data.message || 'Error logging in');
-                saveUser(form); // Fallback
-                navigate(createPageUrl('Home'));
             }
         } catch (err) {
             console.error("Login failed", err);
-            // Fallback for demo
-            saveUser(form);
-            navigate(createPageUrl('Home'));
+            alert('Unable to connect to the server. Please try again.');
         } finally {
             setLoading(false);
         }

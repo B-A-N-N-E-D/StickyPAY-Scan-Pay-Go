@@ -174,7 +174,9 @@ export default function QRReceipt({ order: initialOrder }) {
                     <Calendar className="w-4 h-4 text-yellow-400 flex-shrink-0" />
                     <div>
                         <p className="text-xs text-gray-500">Date & Time</p>
-                        <p className="font-medium">{format(new Date(), 'MMM dd, yyyy • HH:mm')}</p>
+                        <p className="font-medium">
+                            {order?.created_date ? format(new Date(order.created_date), 'MMM dd, yyyy • HH:mm') : format(new Date(), 'MMM dd, yyyy • HH:mm')}
+                        </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 text-gray-300">
