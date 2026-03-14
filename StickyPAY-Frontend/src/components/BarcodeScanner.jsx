@@ -38,7 +38,7 @@ export default function BarcodeScanner({
           fps: 15,
           aspectRatio: 1.777,
           qrbox: scanType === "store"
-            ? { width: 250, height: 250 }
+            ? { width: 260, height: 260 }
             : { width: 300, height: 120 },
           videoConstraints: {
             facingMode: "environment",

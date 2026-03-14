@@ -4,7 +4,7 @@ import { CheckCircle2, Store, Calendar, CreditCard, ShieldCheck, Home, Clock } f
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from "../lib/utils";
-import { getOrders } from './localData';
+import { supabase } from "../lib/supabase";
 
 // Generates a realistic-looking QR code using SVG
 function QRCode({ data }) {
@@ -83,16 +83,25 @@ export default function QRReceipt({ order: initialOrder }) {
     const [order, setOrder] = useState(initialOrder);
 
     useEffect(() => {
-        if (!initialOrder?.id) return;
-        const poll = () => {
-            const orders = getOrders();
-            const fresh = orders.find(o => o.id === initialOrder.id);
-            if (fresh) setOrder(o => ({ ...o, ...fresh }));
+        const channel = supabase
+            .channel('orders')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'orders',
+                    filter: `id=eq.${initialOrder.id}`
+                },
+                payload => {
+                    setOrder(payload.new);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
         };
-        poll();
-        const interval = setInterval(poll, 2000);
-        window.addEventListener('storage', poll);
-        return () => { clearInterval(interval); window.removeEventListener('storage', poll); };
     }, [initialOrder?.id]);
 
     const isVerified = order?.status === 'verified';
@@ -122,9 +131,9 @@ export default function QRReceipt({ order: initialOrder }) {
 
             {/* QR Code */}
             <div className={`rounded-2xl p-4 mb-4 flex flex-col items-center border-4 ${isVerified ? 'bg-white border-blue-400' : 'bg-white border-transparent'}`}>
-                <QRCode data={order?.qr_code_data || 'SP-' + Date.now()} />
-                <p className="text-center text-gray-500 text-xs mt-3 font-mono tracking-widest">
-                    {order?.qr_code_data || 'SP-' + Date.now()}
+                <QRCode data={order?.id} />
+                <p>
+                    {order?.id}
                 </p>
                 {isVerified && (
                     <div className="mt-2 flex items-center gap-1.5 bg-blue-500/10 border border-blue-400/40 rounded-xl px-3 py-1.5">
