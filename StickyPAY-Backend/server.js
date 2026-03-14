@@ -15,8 +15,13 @@ dotenv.config();
 const app = express();
 
 // ── CORS ── Only allow your Vercel frontend
+// ── CORS ── Allow localhost + production
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "*"  // Set FRONTEND_URL in Render to your Vercel URL
+  origin: [
+    "http://localhost:5173",
+    "https://stickypay-plum.vercel.app"
+  ],
+  credentials: true
 }));
 
 app.use(express.json());

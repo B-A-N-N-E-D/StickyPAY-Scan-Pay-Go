@@ -12,6 +12,45 @@ const normalizeProduct = (product) => ({
   store_id: product.store_id ?? product.storeId ?? null,
 });
 
+// GET all products (optionally by store)
+router.get("/", async (req, res) => {
+  try {
+    const { store_id } = req.query;
+
+    let query = supabase.from("products").select("*");
+
+    if (store_id) {
+      // Join via store_products
+      query = supabase.from("store_products")
+        .select(`
+                    stock,
+                    product:products (*)
+                `)
+        .eq("store_id", store_id);
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Map it back to a flat product array
+      const mappedProducts = (data || []).map(p => ({
+        ...p.product,
+        stock: p.stock,
+        store_id
+      }));
+
+      return res.json(mappedProducts.map(normalizeProduct));
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    res.json((data || []).map(normalizeProduct));
+  } catch (err) {
+    console.error("Products fetch error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // GET product by barcode
 router.get("/:barcode", async (req, res) => {
   try {

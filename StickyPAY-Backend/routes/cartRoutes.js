@@ -3,10 +3,33 @@ import { supabase } from "../config/supabase.js";
 
 const router = express.Router();
 
+// GET cart items for a user
+router.get("/:user_id", async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    const { data: cartItems, error } = await supabase
+      .from("cart")
+      .select(`
+        *,
+        product:products (*),
+        store:stores (*)
+      `)
+      .eq("user_id", user_id);
+
+    if (error) throw error;
+
+    res.json({ cartItems });
+  } catch (err) {
+    console.error("Cart fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch cart items" });
+  }
+});
+
 // Add, update, or remove item from cart
 router.post("/", async (req, res) => {
   try {
-    const { user_id, product_id, quantity, action = "add" } = req.body;
+    const { user_id, product_id, store_id, quantity, action = "add" } = req.body;
 
     if (!user_id || !product_id) {
       return res.status(400).json({ error: "user_id and product_id are required" });
@@ -17,7 +40,8 @@ router.post("/", async (req, res) => {
         .from("cart")
         .delete()
         .eq("user_id", user_id)
-        .eq("product_id", product_id);
+        .eq("product_id", product_id)
+        .eq("store_id", store_id);
 
       if (error) throw error;
 
@@ -27,6 +51,7 @@ router.post("/", async (req, res) => {
     const payload = {
       user_id,
       product_id,
+      store_id,
       quantity: Number(quantity) || 1,
     };
 
@@ -35,6 +60,7 @@ router.post("/", async (req, res) => {
       .select("*")
       .eq("user_id", user_id)
       .eq("product_id", product_id)
+      .eq("store_id", store_id)
       .maybeSingle();
 
     if (fetchError) throw fetchError;
@@ -48,6 +74,7 @@ router.post("/", async (req, res) => {
         .update({ quantity: payload.quantity })
         .eq("user_id", user_id)
         .eq("product_id", product_id)
+        .eq("store_id", store_id)
         .select());
     } else {
       ({ data, error } = await supabase

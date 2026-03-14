@@ -96,6 +96,7 @@ export default function Scanner() {
                         quantity: 1,
                     });
                 }
+
                 currentCart.total = currentCart.items.reduce((s, i) => s + (i.price * i.quantity), 0);
                 saveCart(currentCart);
                 setCart({ ...currentCart });
@@ -108,6 +109,7 @@ export default function Scanner() {
                         body: JSON.stringify({
                             user_id: currentUser.id,
                             product_id: product.id,
+                            store_id: activeStore?.id,
                             quantity: existing ? existing.quantity : 1,
                             action: existing ? 'update' : 'add'
                         })

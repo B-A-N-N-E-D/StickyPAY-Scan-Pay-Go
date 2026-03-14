@@ -55,7 +55,13 @@ export default function Cart() {
     fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id, product_id: productId, quantity: newQty, action })
+      body: JSON.stringify({
+        user_id: user.id,
+        product_id: productId,
+        store_id: activeStore?.id,
+        quantity: newQty,
+        action
+      })
     }).catch(() => { });
   };
 
@@ -99,11 +105,46 @@ export default function Cart() {
     setShowCoupons(false);
   };
 
-  const handlePayment = (method) => {
+  const handlePayment = async (method) => {
     if (processing) return;
     setProcessing(true);
+
     if (redeemCoins && coinDiscount > 0) redeemTokensFn(coinDiscount);
     const finalAmount = Math.max(0, applyDiscount(totalAmount) - coinDiscount);
+
+    // Hit the backend logic for checkout
+    try {
+      if (user?.id) {
+        const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.id,
+            store_id: activeStore?.id,
+          })
+        });
+
+        if (checkoutRes.ok) {
+          const { order: newBackendOrder } = await checkoutRes.json();
+
+          // Process Payment on the backend as well
+          await fetch(`${import.meta.env.VITE_API_URL}/api/payments/confirm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              order_id: newBackendOrder.order_id,
+              user_id: user.id,
+              store_id: activeStore?.id,
+              amount: finalAmount,
+              payment_method: method
+            })
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Order API failed", err);
+    }
+
     const newOrder = saveOrder({
       store_id: activeStore?.id || 'unknown',
       store_name: activeStore?.name || 'Store',
@@ -116,6 +157,7 @@ export default function Cart() {
       total_amount: finalAmount,
       payment_method: method,
     });
+
     clearCart();
     clearStore();
     const { earned } = awardTokens(newOrder.id, finalAmount);

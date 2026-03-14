@@ -16,6 +16,23 @@ const normalizeLookupValue = (value = "") =>
     .replace(/\s+/g, " ")
     .toLowerCase();
 
+// Get all stores
+router.get("/", async (req, res) => {
+  try {
+    const { data: stores, error } = await supabase
+      .from("stores")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    res.json(stores.map(normalizeStore));
+  } catch (err) {
+    console.error("Stores fetch error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Get store using store_name from QR
 router.get("/:storeName", async (req, res) => {
   try {
