@@ -93,22 +93,25 @@ router.post("/checkout", async (req, res) => {
 
     // 3. Deduct Inventory (from store_products)
     // NOTE: In a production app, do this within a database transaction or RPC call
+    // 3. Deduct Inventory safely
     for (const item of cartItems) {
-      const { data: storeProduct } = await supabase
+
+      const { data, error } = await supabase
         .from("store_products")
-        .select("stock")
+        .update({
+          stock: supabase.raw("stock - ?", [item.quantity])
+        })
         .eq("store_id", store_id)
         .eq("product_id", item.product_id)
-        .single();
+        .gte("stock", item.quantity)
+        .select();
 
-      if (storeProduct) {
-        const newStock = Math.max(0, storeProduct.stock - item.quantity); // Prevent negative stock
+      if (error) throw error;
 
-        await supabase
-          .from("store_products")
-          .update({ stock: newStock })
-          .eq("store_id", store_id)
-          .eq("product_id", item.product_id);
+      if (!data || data.length === 0) {
+        return res.status(400).json({
+          error: "Insufficient stock for product"
+        });
       }
     }
 
