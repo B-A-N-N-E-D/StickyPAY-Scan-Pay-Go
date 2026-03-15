@@ -2,6 +2,13 @@ import express from "express";
 import { supabase } from "../config/supabase.js";
 
 const router = express.Router();
+// ⚡ Product cache
+const productCache = new Map();
+
+// Auto clear cache every 5 minutes
+setInterval(() => {
+  productCache.clear();
+}, 300000);
 
 const normalizeProduct = (product) => ({
   ...product,
@@ -56,6 +63,12 @@ router.get("/:barcode", async (req, res) => {
   try {
     const { barcode } = req.params;
 
+    // ⚡ 1. Check cache first
+    if (productCache.has(barcode)) {
+      return res.json(productCache.get(barcode));
+    }
+
+    // 2. Query database
     const { data, error } = await supabase
       .from("products")
       .select("*")
@@ -66,7 +79,13 @@ router.get("/:barcode", async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    res.json(normalizeProduct(data));
+    const product = normalizeProduct(data);
+
+    // ⚡ 3. Save to cache
+    productCache.set(barcode, product);
+
+    res.json(product);
+
   } catch (err) {
     console.error("Product fetch error:", err);
     res.status(500).json({ error: "Server error" });
