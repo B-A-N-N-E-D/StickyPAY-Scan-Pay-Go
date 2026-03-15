@@ -16,11 +16,19 @@ const app = express();
 
 // ── CORS ── Only allow your Vercel frontend
 // ── CORS ── Allow localhost + production
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://stickypay-plum.vercel.app"
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://stickypay-plum.vercel.app"
-  ],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 
