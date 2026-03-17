@@ -1,6 +1,6 @@
 import express from "express";
 import { supabase } from "../config/supabase.js";
-import { v4 as uuidv4 } from "uuid";
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -65,7 +65,7 @@ router.post("/checkout", async (req, res) => {
     });
 
     // 1. Create order
-    const qrCode = uuidv4();
+    const qrCode = crypto.randomUUID();
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
