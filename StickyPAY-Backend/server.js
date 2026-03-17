@@ -48,6 +48,11 @@ app.get("/", (req, res) => {
   res.send("StickyPay Backend Running");
 });
 
+// ── /api/health — used by frontend to warm up Render on load
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", ts: Date.now() });
+});
+
 // ── Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

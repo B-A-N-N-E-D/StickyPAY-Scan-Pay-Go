@@ -109,7 +109,7 @@ export default function Scanner() {
                         body: JSON.stringify({
                             user_id: currentUser.id,
                             product_id: product.id,
-                            store_id: activeStore?.id,
+                            store_id: activeStore?.store_id || activeStore?.id,
                             quantity: existing ? existing.quantity : 1,
                             action: existing ? 'update' : 'add'
                         })

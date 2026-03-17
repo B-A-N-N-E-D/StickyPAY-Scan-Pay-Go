@@ -91,7 +91,7 @@ export default function QRReceipt({ order: initialOrder }) {
                     event: 'UPDATE',
                     schema: 'public',
                     table: 'orders',
-                    filter: `id=eq.${initialOrder.id}`
+                    filter: `id=eq.${initialOrder.qr_code}`
                 },
                 payload => {
                     setOrder(payload.new);

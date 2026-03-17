@@ -1,5 +1,6 @@
 import express from "express";
 import { supabase } from "../config/supabase.js";
+import { v4 as uuidv4 } from "uuid";
 
 const router = express.Router();
 
@@ -64,13 +65,16 @@ router.post("/checkout", async (req, res) => {
     });
 
     // 1. Create order
+    const qrCode = uuidv4();
+
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id,
         store_id,
         total_amount: totalAmount,
-        status: "pending"
+        status: "paid",
+        qr_code: qrCode
       })
       .select()
       .single();
@@ -87,9 +91,8 @@ router.post("/checkout", async (req, res) => {
       .from("order_items")
       .insert(orderItemsWithOrderId);
 
-    if (insertOrderItemsError) {
-      console.warn("Failed to insert order items:", insertOrderItemsError);
-    }
+    // ✅ FIX — Throw the error so the entire checkout rolls back
+    if (insertOrderItemsError) throw insertOrderItemsError;
 
     // 3. Deduct Inventory (from store_products)
     // NOTE: In a production app, do this within a database transaction or RPC call
@@ -124,7 +127,8 @@ router.post("/checkout", async (req, res) => {
 
     res.json({
       message: "Order created",
-      order
+      order,
+      qr_code: qrCode
     });
 
   } catch (err) {

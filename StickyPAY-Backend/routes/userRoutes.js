@@ -31,7 +31,7 @@ router.get("/:id", async (req, res) => {
 // Login / Register endpoint
 router.post("/login", async (req, res) => {
     try {
-        const { full_name, phone } = req.body;
+        const { full_name, phone, email, address } = req.body;
 
         if (!phone) {
             return res.status(400).json({ message: "Phone number is required." });
@@ -62,6 +62,8 @@ router.post("/login", async (req, res) => {
             id: crypto.randomUUID(),
             full_name,
             phone,
+            email: email || null,
+            address: address || null,
         };
 
         const { data: insertedUser, error: insertError } = await supabase

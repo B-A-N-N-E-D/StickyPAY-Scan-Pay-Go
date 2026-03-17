@@ -115,34 +115,46 @@ export default function Cart() {
     // Hit the backend logic for checkout
     try {
       if (user?.id) {
+        // [FIX BUG 4] use store_id field correctly
+        const storeId = activeStore?.store_id || activeStore?.id;
+
         const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: user.id,
-            store_id: activeStore?.id,
+            store_id: storeId,
           })
         });
 
-        if (checkoutRes.ok) {
-          const { order: newBackendOrder } = await checkoutRes.json();
-
-          // Process Payment on the backend as well
-          await fetch(`${import.meta.env.VITE_API_URL}/api/payments/confirm`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              order_id: newBackendOrder.order_id,
-              user_id: user.id,
-              store_id: activeStore?.id,
-              amount: finalAmount,
-              payment_method: method
-            })
-          });
+        // [FIX BUG 8] stop if checkout failed — do not proceed to payment
+        if (!checkoutRes.ok) {
+          const errData = await checkoutRes.json();
+          alert(errData.message || errData.error || 'Checkout failed. Please try again.');
+          setProcessing(false);
+          return;
         }
+
+        const { order: newBackendOrder } = await checkoutRes.json();
+
+        // Process Payment on the backend as well
+        await fetch(`${import.meta.env.VITE_API_URL}/api/payments/confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_id: newBackendOrder.order_id,
+            user_id: user.id,
+            store_id: storeId,
+            amount: finalAmount,
+            payment_method: method
+          })
+        });
       }
     } catch (err) {
       console.error("Order API failed", err);
+      alert('Unable to connect to server. Please try again.');
+      setProcessing(false);
+      return;
     }
 
     const newOrder = saveOrder({
