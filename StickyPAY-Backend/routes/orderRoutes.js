@@ -68,7 +68,7 @@ router.post("/checkout", async (req, res) => {
         user_id,
         store_id,
         total_amount: totalAmount,
-        status: "paid",
+        payment_status: "paid",
         qr_code: qrCode
       })
       .select()

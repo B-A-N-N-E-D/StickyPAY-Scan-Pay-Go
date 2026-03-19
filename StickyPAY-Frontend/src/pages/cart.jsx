@@ -34,11 +34,12 @@ export default function Cart() {
 
   useEffect(() => {
     const data = getCart();
-    if (data) {
+    if (data && data.items && data.items.length > 0) {
       setCartData(data);
-      setItems(data.items || []);
+      setItems(data.items);
+    } else {
+      console.log("Cart is empty or not loaded properly");
     }
-    setUserTokens(getTokens());
   }, []);
 
   const updateItems = (updated) => {
@@ -118,14 +119,31 @@ export default function Cart() {
         // [FIX BUG 4] use store_id field correctly
         const storeId = activeStore?.store_id || activeStore?.id;
 
+        const freshCart = getCart();
+        const updatedItems = freshCart?.items || [];
+
+
+        console.log("CHECKOUT ITEMS:", updatedItems);
+
+        if (!updatedItems || updatedItems.length === 0) {
+          alert("Cart is empty!");
+          setProcessing(false);
+          return;
+        }
+      console.log("SENDING TO BACKEND:", {
+        user_id: user.id,
+        store_id: storeId,
+        items: updatedItems
+      });  
+
       const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: user.id,
             store_id: storeId,
-            items: items.map(item => ({
-              product_id: item.id,
+            items: updatedItems.map(item => ({
+              product_id: item.product_id || item.id,
               quantity: item.quantity,
               price: item.price,
             })),
@@ -166,8 +184,7 @@ export default function Cart() {
       store_id: activeStore?.id || 'unknown',
       store_name: activeStore?.name || 'Store',
       items: items.map(item => ({
-        product_id: item.id,
-        name: item.name,
+        product_id: item.product_id || item.id,        name: item.name,
         price: item.price,
         quantity: item.quantity,
       })),
