@@ -118,12 +118,17 @@ export default function Cart() {
         // [FIX BUG 4] use store_id field correctly
         const storeId = activeStore?.store_id || activeStore?.id;
 
-        const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/checkout`, {
+      const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: user.id,
             store_id: storeId,
+            items: items.map(item => ({
+              product_id: item.id,
+              quantity: item.quantity,
+              price: item.price,
+            })),
           })
         });
 

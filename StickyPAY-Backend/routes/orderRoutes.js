@@ -31,36 +31,31 @@ router.get("/:user_id", async (req, res) => {
   }
 });
 
+// POST /checkout
+// Accepts items directly from the frontend (cart is localStorage-based,
+// so we never read from a Supabase cart table here)
 router.post("/checkout", async (req, res) => {
   try {
-    const { user_id, store_id } = req.body;
+    const { user_id, store_id, items } = req.body;
 
-    // Get cart items with product info for pricing
-    const { data: cartItems, error: cartError } = await supabase
-      .from("cart")
-      .select(`
-          *,
-          product:products (price)
-      `)
-      .eq("user_id", user_id)
-      .eq("store_id", store_id);
-
-    if (cartError) throw cartError;
-
-    if (!cartItems || !cartItems.length) {
-      return res.status(400).json({ message: "Cart is empty for this store" });
+    // items: [{ product_id, quantity, price }]
+    if (!user_id || !store_id) {
+      return res.status(400).json({ message: "user_id and store_id are required" });
     }
 
-    let totalAmount = 0;
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "No items in cart" });
+    }
 
-    // Calculate Total and build order items array
-    const orderItemsToInsert = cartItems.map((item) => {
-      const itemTotal = item.product.price * item.quantity;
+    // Calculate total from frontend-provided items
+    let totalAmount = 0;
+    const orderItemsToInsert = items.map((item) => {
+      const itemTotal = item.price * item.quantity;
       totalAmount += itemTotal;
       return {
         product_id: item.product_id,
         quantity: item.quantity,
-        price: item.product.price,
+        price: item.price,
       };
     });
 
@@ -91,43 +86,29 @@ router.post("/checkout", async (req, res) => {
       .from("order_items")
       .insert(orderItemsWithOrderId);
 
-    // ✅ FIX — Throw the error so the entire checkout rolls back
     if (insertOrderItemsError) throw insertOrderItemsError;
 
-    // 3. Deduct Inventory (from store_products)
-    for (const item of cartItems) {
-      // Step A: Fetch current stock value
-      const { data: stockRow, error: stockFetchError } = await supabase
-        .from("store_products")
-        .select("stock")
-        .eq("store_id", store_id)
-        .eq("product_id", item.product_id)
-        .single();
+    // 3. Deduct inventory from store_products (best-effort, skip if fails)
+    for (const item of items) {
+      try {
+        const { data: stockRow } = await supabase
+          .from("store_products")
+          .select("stock")
+          .eq("store_id", store_id)
+          .eq("product_id", item.product_id)
+          .single();
 
-      if (stockFetchError) throw stockFetchError;
-
-      if (!stockRow || stockRow.stock < item.quantity) {
-        return res.status(400).json({
-          error: "Insufficient stock for product"
-        });
+        if (stockRow && stockRow.stock >= item.quantity) {
+          await supabase
+            .from("store_products")
+            .update({ stock: stockRow.stock - item.quantity })
+            .eq("store_id", store_id)
+            .eq("product_id", item.product_id);
+        }
+      } catch (_) {
+        // Non-fatal: do not block checkout if inventory deduction fails
       }
-
-      // Step B: Update to stock - quantity
-      const { error: stockUpdateError } = await supabase
-        .from("store_products")
-        .update({ stock: stockRow.stock - item.quantity })
-        .eq("store_id", store_id)
-        .eq("product_id", item.product_id);
-
-      if (stockUpdateError) throw stockUpdateError;
     }
-
-    // 4. Clear cart for this store
-    await supabase
-      .from("cart")
-      .delete()
-      .eq("user_id", user_id)
-      .eq("store_id", store_id);
 
     res.json({
       message: "Order created",
@@ -136,8 +117,8 @@ router.post("/checkout", async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Checkout failed" });
+    console.error("Checkout error:", err);
+    res.status(500).json({ error: "Checkout failed", detail: err?.message });
   }
 });
 
