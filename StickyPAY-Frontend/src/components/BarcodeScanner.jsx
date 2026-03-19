@@ -39,11 +39,16 @@ export default function BarcodeScanner({
           await scanner.stop();
         }
       } catch (_) {}
-      try { scanner.clear(); } catch (_) {}
+      try { await scanner.clear(); } catch (_) {}
+
+      scannerRef.current = null;   // ✅ MOVE THIS LINE DOWN
     }
 
     // 2. Nuke every active MediaTrack on the page via enumerateDevices approach
     //    This catches any stream html5qrcode opened internally
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     document.querySelectorAll("video").forEach((v) => {
       try {
         v.pause();
@@ -115,11 +120,12 @@ export default function BarcodeScanner({
 
     // Cleanup runs on unmount (navigation, close, or scan success)
     return () => {
-      killCamera();
+      killCamera().catch(() =>{});;
     };
   }, [scanType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClose = async () => {
+    scannedRef.current = true;  // ✅ prevent scan firing after close
     await killCamera();
     onClose();
   };

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useRef, useContext, useState, useEffect } from 'react';
 import { StoreContext } from "@/lib/StoreContext";
 import { getCart, getUser, saveCart } from "../components/localData";
 import { useNavigate } from "react-router-dom";
@@ -16,11 +16,20 @@ export default function Scanner() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const currentUser = getUser();
+    const videoRef = useRef(null);
+    const streamRef = useRef(null);
 
     // Refresh cart whenever scanning ends or store changes
     useEffect(() => {
         setCart(getCart());
     }, [isScanning, activeStore]);
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+             streamRef.current = null;
+        }
+    };
 
     const removeCartItem = (itemId) => {
         let currentCart = getCart();
@@ -266,7 +275,10 @@ export default function Scanner() {
                     scanType={scanType}
                     storeName={activeStore?.name}
                     onScan={handleScan}
-                    onClose={() => setIsScanning(false)}
+                    onClose={() => {
+                        stopCamera();   // ✅ stop camera
+                        setIsScanning(false);
+                    }}
                 />
             )}
         </div>
