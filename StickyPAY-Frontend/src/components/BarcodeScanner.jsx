@@ -24,6 +24,27 @@ export default function BarcodeScanner({
   // killCamera: stop html5qrcode library, then forcefully
   // revoke every video-track on the page (belt + suspenders)
   // ────────────────────────────────────────────────────────
+  
+  const forceStopCamera = () => {
+    // 🔥 kill ALL media streams globally
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        stream.getTracks().forEach(track => track.stop());
+      })
+      .catch(() => {});
+
+    // 🔥 kill any existing video elements
+    document.querySelectorAll("video").forEach((v) => {
+      try {
+        if (v.srcObject) {
+          v.srcObject.getTracks().forEach(t => t.stop());
+          v.srcObject = null;
+        }
+        v.remove();
+      } catch {}
+    });
+  };
+  
   const killCamera = async () => {
     if (isStoppingRef.current) return;
     isStoppingRef.current = true;
@@ -109,13 +130,16 @@ export default function BarcodeScanner({
 
           scannedRef.current = true;
 
-          // ✅ STEP 1: stop camera
+          // ✅ STEP 1: stop scanner
           await killCamera();
 
-          // ✅ STEP 2: wait for hardware release (VERY IMPORTANT)
+          // ✅ STEP 2: FORCE STOP EVERYTHING (CRITICAL)
+          forceStopCamera();
+
+          // ✅ STEP 3: delay before navigation
           setTimeout(() => {
             onScan(clean);
-          }, 120);   // ← THIS LINE FIXES YOUR ISSUE
+          }, 300);
         },
         () => {}
       )
@@ -132,6 +156,8 @@ export default function BarcodeScanner({
   const handleClose = async () => {
     scannedRef.current = true;  // ✅ prevent scan firing after close
     await killCamera();
+    forceStopCamera();
+    
     onClose();
   };
 
