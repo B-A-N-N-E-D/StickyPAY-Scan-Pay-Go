@@ -60,7 +60,8 @@ router.post("/checkout", async (req, res) => {
     });
 
     // 1. Create order
-    const qrCode = crypto.randomUUID();
+    const qrCode = `TXN-${Date.now()}`;
+    console.log("Generated QR:", qrCode);
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
