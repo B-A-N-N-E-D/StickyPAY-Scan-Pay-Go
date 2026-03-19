@@ -102,15 +102,20 @@ export default function BarcodeScanner({
           if (scannedRef.current) return;
           if (isStoppingRef.current) return;
 
-          // Reject garbage / partial reads
           const clean = decodedText.trim();
           if (!clean || clean.length < 4) return;
           if (/[^\x20-\x7E]/.test(clean)) return;
           if (clean.length > 50) return;
 
           scannedRef.current = true;
+
+          // ✅ STEP 1: stop camera
           await killCamera();
-          onScan(clean);
+
+          // ✅ STEP 2: wait for hardware release (VERY IMPORTANT)
+          setTimeout(() => {
+            onScan(clean);
+          }, 120);   // ← THIS LINE FIXES YOUR ISSUE
         },
         () => {}
       )
