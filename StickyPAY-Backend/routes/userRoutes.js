@@ -4,6 +4,16 @@ import crypto from "crypto";
 
 const router = express.Router();
 
+// Debug endpoint — verify env vars are loaded (safe: no secrets exposed)
+router.get("/debug-env", (req, res) => {
+    res.json({
+        SUPABASE_URL_set: !!process.env.SUPABASE_URL,
+        SUPABASE_KEY_set: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        SUPABASE_URL_prefix: process.env.SUPABASE_URL?.slice(0, 30) || "NOT SET",
+        KEY_prefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10) || "NOT SET",
+    });
+});
+
 // Get User Profile
 router.get("/:id", async (req, res) => {
     try {
@@ -19,12 +29,10 @@ router.get("/:id", async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        res.json({
-            user
-        });
+        res.json({ user });
     } catch (err) {
         console.error("Profile Fetch Error:", err);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error", detail: err?.message });
     }
 });
 
@@ -46,11 +54,15 @@ router.post("/login", async (req, res) => {
 
         if (fetchError) {
             console.error("Fetch DB Error:", fetchError);
-            throw fetchError;
+            return res.status(500).json({
+                message: "Database error while looking up user",
+                detail: fetchError.message,
+                hint: fetchError.hint || null,
+                code: fetchError.code || null,
+            });
         }
 
         if (existingUser) {
-            // User exists, return their data
             return res.status(200).json({
                 message: "Welcome back!",
                 user: existingUser
@@ -74,7 +86,12 @@ router.post("/login", async (req, res) => {
 
         if (insertError) {
             console.error("Insert DB Error:", insertError);
-            throw insertError;
+            return res.status(500).json({
+                message: "Database error while creating user",
+                detail: insertError.message,
+                hint: insertError.hint || null,
+                code: insertError.code || null,
+            });
         }
 
         res.status(201).json({
@@ -84,7 +101,7 @@ router.post("/login", async (req, res) => {
 
     } catch (error) {
         console.error("Login Error:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error", detail: error?.message });
     }
 });
 
