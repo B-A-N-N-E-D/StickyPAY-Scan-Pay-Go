@@ -49,46 +49,46 @@ export default function BarcodeScanner({
     if (isStoppingRef.current) return;
     isStoppingRef.current = true;
 
-    // 1. Stop the html5qrcode scanner
     const scanner = scannerRef.current;
-    if (scanner) {
-      scannerRef.current = null;
-      try {
-        const state = scanner.getState();
-        // state 2 = SCANNING, state 1 = PAUSED
+
+    try {
+      if (scanner) {
+        const state = scanner.getState?.();
+
         if (state === 2 || state === 1) {
           await scanner.stop();
         }
-      } catch (_) {}
-      try { await scanner.clear(); } catch (_) {}
 
-      scannerRef.current = null;   // ✅ MOVE THIS LINE DOWN
+        await scanner.clear();
+      }
+    } catch (err) {
+      console.warn("Scanner stop error:", err);
     }
 
-    // 2. Nuke every active MediaTrack on the page via enumerateDevices approach
-    //    This catches any stream html5qrcode opened internally
-    
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // ⛔ DO THIS AFTER stop + clear
+    scannerRef.current = null;
 
+    // 🔥 HARD KILL ALL CAMERA STREAMS (CRITICAL)
+    navigator.mediaDevices?.getUserMedia &&
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          stream.getTracks().forEach(track => track.stop());
+        })
+        .catch(() => {});
+
+    // 🧹 CLEAN ALL VIDEO ELEMENTS
     document.querySelectorAll("video").forEach((v) => {
       try {
-        v.pause();
         if (v.srcObject) {
-          v.srcObject.getTracks().forEach((t) => {
-            t.stop();
-            t.enabled = false;
-          });
+          v.srcObject.getTracks().forEach(t => t.stop());
           v.srcObject = null;
         }
-        v.src = "";
-        v.load();
         v.remove();
       } catch (_) {}
     });
 
-    // 3. Clear the reader div so html5qrcode cannot re-attach
-    const readerEl = document.getElementById("reader");
-    if (readerEl) readerEl.innerHTML = "";
+    const reader = document.getElementById("reader");
+    if (reader) reader.innerHTML = "";
   };
 
   useEffect(() => {
@@ -130,16 +130,12 @@ export default function BarcodeScanner({
 
           scannedRef.current = true;
 
-          // ✅ STEP 1: stop scanner
           await killCamera();
 
-          // ✅ STEP 2: FORCE STOP EVERYTHING (CRITICAL)
-          forceStopCamera();
-
-          // ✅ STEP 3: delay before navigation
+          // ⛔ DELAY navigation → prevents crash
           setTimeout(() => {
             onScan(clean);
-          }, 300);
+          }, 200);
         },
         () => {}
       )
@@ -149,16 +145,21 @@ export default function BarcodeScanner({
 
     // Cleanup runs on unmount (navigation, close, or scan success)
     return () => {
-      killCamera().catch(() =>{});;
+      scannedRef.current = true;
+      isStoppingRef.current = true;
+
+      killCamera();
     };
   }, [scanType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClose = async () => {
     scannedRef.current = true;  // ✅ prevent scan firing after close
+    scannedRef.current = true;
     await killCamera();
-    forceStopCamera();
-    
-    onClose();
+
+    setTimeout(() => {
+      onClose();
+    }, 100);
   };
 
   const toggleFlash = async () => {
