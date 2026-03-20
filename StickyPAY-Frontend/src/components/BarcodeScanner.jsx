@@ -121,7 +121,23 @@ export default function BarcodeScanner({
       scannedRef.current = true;
       isStoppingRef.current = true;
 
-      killCamera();
+      // 🔥 force immediate stop without async delay
+      if (scannerRef.current) {
+        try {
+          scannerRef.current.stop().catch(() => {});
+          scannerRef.current.clear().catch(() => {});
+        } catch {}
+      }
+
+      // backup cleanup
+      document.querySelectorAll("video").forEach((v) => {
+        try {
+          if (v.srcObject) {
+            v.srcObject.getTracks().forEach(t => t.stop());
+            v.srcObject = null;
+          }
+        } catch {}
+      });
     };
   }, [scanType]); // eslint-disable-line react-hooks/exhaustive-deps
 
