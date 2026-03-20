@@ -32,6 +32,18 @@ export default function BarcodeScanner({
 
     const scanner = scannerRef.current;
 
+    // 🔥 TURN OFF FLASH FIRST (VERY IMPORTANT)
+    try {
+      if (scanner && flashOn) {
+        await scanner.applyVideoConstraints({
+          advanced: [{ torch: false }]
+        });
+        setFlashOn(false);
+      }
+    } catch (e) {
+      // ignore (some devices don’t support torch)
+    }
+
     try {
       if (scanner) {
         const state = scanner.getState?.();
@@ -56,7 +68,6 @@ export default function BarcodeScanner({
           v.srcObject.getTracks().forEach(t => t.stop());
           v.srcObject = null;
         }
-        v.remove();
       } catch (_) {}
     });
 
