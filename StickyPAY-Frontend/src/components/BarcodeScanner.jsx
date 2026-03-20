@@ -25,25 +25,6 @@ export default function BarcodeScanner({
   // revoke every video-track on the page (belt + suspenders)
   // ────────────────────────────────────────────────────────
   
-  const forceStopCamera = () => {
-    // 🔥 kill ALL media streams globally
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        stream.getTracks().forEach(track => track.stop());
-      })
-      .catch(() => {});
-
-    // 🔥 kill any existing video elements
-    document.querySelectorAll("video").forEach((v) => {
-      try {
-        if (v.srcObject) {
-          v.srcObject.getTracks().forEach(t => t.stop());
-          v.srcObject = null;
-        }
-        v.remove();
-      } catch {}
-    });
-  };
   
   const killCamera = async () => {
     if (isStoppingRef.current) return;
@@ -67,14 +48,6 @@ export default function BarcodeScanner({
 
     // ⛔ DO THIS AFTER stop + clear
     scannerRef.current = null;
-
-    // 🔥 HARD KILL ALL CAMERA STREAMS (CRITICAL)
-    navigator.mediaDevices?.getUserMedia &&
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          stream.getTracks().forEach(track => track.stop());
-        })
-        .catch(() => {});
 
     // 🧹 CLEAN ALL VIDEO ELEMENTS
     document.querySelectorAll("video").forEach((v) => {
@@ -154,7 +127,6 @@ export default function BarcodeScanner({
 
   const handleClose = async () => {
     scannedRef.current = true;  // ✅ prevent scan firing after close
-    scannedRef.current = true;
     await killCamera();
 
     setTimeout(() => {

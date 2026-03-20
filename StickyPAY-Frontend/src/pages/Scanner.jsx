@@ -16,20 +16,13 @@ export default function Scanner() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const currentUser = getUser();
-    const videoRef = useRef(null);
-    const streamRef = useRef(null);
-
+    
     // Refresh cart whenever scanning ends or store changes
     useEffect(() => {
         setCart(getCart());
     }, [isScanning, activeStore]);
 
-    const stopCamera = () => {
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-             streamRef.current = null;
-        }
-    };
+    
 
     const removeCartItem = (itemId) => {
         let currentCart = getCart();
@@ -271,12 +264,10 @@ export default function Scanner() {
             {/* Camera overlay */}
             {isScanning && (
                 <BarcodeScanner
-                    key={Date.now()}   // 🔥 THIS FIXES THE BLANK SCREEN
                     scanType={scanType}
                     storeName={activeStore?.name}
                     onScan={handleScan}
                     onClose={() => {
-                        stopCamera();   // ✅ stop camera
                         setIsScanning(false);
                     }}
                 />
