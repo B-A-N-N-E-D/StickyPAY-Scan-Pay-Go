@@ -66,15 +66,17 @@ router.post("/checkout", async (req, res) => {
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .insert({
-        user_id,
-        store_id,
-        total_amount: totalAmount,
-        payment_status: "paid",
-        qr_code: qrCode,
-        transaction_id: transaction_id, // ✅ ADD THIS LINE
-        verified: false
-      })
+      .insert([
+        {
+          user_id,
+          store_id,
+          total_amount: totalAmount,
+          payment_status: "paid",
+          qr_code: qrCode,
+          transaction_id: transaction_id,
+          verified: false
+        }
+      ])
       .select()
       .single();
 

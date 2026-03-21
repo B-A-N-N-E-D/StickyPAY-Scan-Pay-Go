@@ -38,14 +38,14 @@ router.post("/confirm", async (req, res) => {
     // 1. Insert payment record
     const { data: payment, error } = await supabase
       .from("payments")
-      .insert({
+      .insert([{
         order_id,
         user_id,
         store_id,
         total_amount: amount,
         payment_method,
         status: "success"
-      })
+      }])
       .select()
       .single();
 
