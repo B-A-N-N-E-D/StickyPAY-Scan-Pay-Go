@@ -60,7 +60,8 @@ router.post("/checkout", async (req, res) => {
     });
 
     // 1. Create order
-    const qrCode = `TXN-${Date.now()}`;
+    const transaction_id = `TXN-${Date.now()}`;
+    const qrCode = transaction_id;
     console.log("Generated QR:", qrCode);
 
     const { data: order, error: orderError } = await supabase
@@ -70,7 +71,9 @@ router.post("/checkout", async (req, res) => {
         store_id,
         total_amount: totalAmount,
         payment_status: "paid",
-        qr_code: qrCode
+        qr_code: qrCode,
+        transaction_id: transaction_id, // ✅ ADD THIS LINE
+        verified: false
       })
       .select()
       .single();
