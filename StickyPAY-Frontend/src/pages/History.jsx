@@ -8,20 +8,20 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '../lib/supabase';
 import QRCode from 'react-qr-code';
 
-// Payment icon helper
+// Payment icon
 const paymentIcon = (method) => {
   if (method === 'card') return <CreditCard className="w-4 h-4" />;
   if (method === 'wallet') return <Wallet className="w-4 h-4" />;
   return <Smartphone className="w-4 h-4" />;
 };
 
-// Download invoice
+// Invoice
 const downloadInvoice = (order) => {
   const lines = [
     '========================================',
     '           StickyPAY INVOICE            ',
     '========================================',
-    `Transaction ID : ${order.transaction_id}`,
+    `Transaction ID : ${order.transaction_id || 'N/A'}`,
     `Date & Time    : ${order.created_at ? format(new Date(order.created_at), 'dd MMM yyyy, hh:mm a') : '—'}`,
     `Store          : ${order.store_name || '—'}`,
     `Payment Mode   : ${order.payment_method || '—'}`,
@@ -35,7 +35,7 @@ const downloadInvoice = (order) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Invoice_${order.transaction_id}.txt`;
+  a.download = `Invoice_${order.transaction_id || "order"}.txt`;
   a.click();
   URL.revokeObjectURL(url);
 };
@@ -45,7 +45,7 @@ export default function History() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [enlargedQr, setEnlargedQr] = useState(null);
 
-  // 🔥 FETCH FROM SUPABASE
+  // 🔥 FETCH ORDERS FROM SUPABASE
   useEffect(() => {
     const fetchOrders = async () => {
       const { data, error } = await supabase
@@ -53,7 +53,7 @@ export default function History() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error) setOrders(data);
+      if (!error) setOrders(data || []);
       else console.error(error);
     };
 
@@ -80,61 +80,89 @@ export default function History() {
 
           return (
             <div key={order.order_id} className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-              
+
               {/* HEADER */}
               <button
-                className="w-full p-4 flex justify-between items-center"
+                className="w-full p-4 text-left flex items-center justify-between"
                 onClick={() => setExpandedOrder(expandedOrder === order.order_id ? null : order.order_id)}
               >
-                <div className="flex gap-3">
+                <div className="flex items-center gap-3">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
                     status === 'verified' ? 'bg-blue-500/20' : 'bg-green-500/20'
                   }`}>
                     {status === 'verified'
-                      ? <ShieldCheck className="text-blue-400" />
-                      : <CheckCircle2 className="text-green-500" />}
+                      ? <ShieldCheck className="w-5 h-5 text-blue-400" />
+                      : <CheckCircle2 className="w-5 h-5 text-green-500" />}
                   </div>
 
                   <div>
-                    <p className="font-semibold">{order.store_name}</p>
-                    <p className="text-xs text-gray-500">
-                      {order.created_at ? format(new Date(order.created_at), 'dd MMM yyyy, hh:mm a') : ''}
+                    <p className="font-semibold text-white">{order.store_name || 'Store'}</p>
+                    <p className="text-gray-500 text-xs">
+                      {order.created_at ? format(new Date(order.created_at), 'dd MMM yyyy, hh:mm a') : '—'}
                     </p>
-                    <p className="text-xs">
-                      {status === 'verified' ? '✓ Verified' : '⏳ Pending'}
-                    </p>
+                    <span className={`text-xs font-semibold ${status === 'verified' ? 'text-blue-400' : 'text-orange-400'}`}>
+                      {status === 'verified' ? '✓ Security Verified' : '⏳ Pending security check'}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-yellow-400 font-bold">
+                  <span className="text-yellow-400 font-bold text-base">
                     ₹{order.total_amount ? order.total_amount.toFixed(2) : '0.00'}
                   </span>
-                  {expandedOrder === order.order_id ? <ChevronUp /> : <ChevronDown />}
+                  {expandedOrder === order.order_id
+                    ? <ChevronUp className="w-4 h-4 text-gray-500" />
+                    : <ChevronDown className="w-4 h-4 text-gray-500" />}
                 </div>
               </button>
 
               {/* DETAILS */}
               {expandedOrder === order.order_id && (
-                <div className="p-4 space-y-4 border-t border-gray-800">
+                <div className="border-t border-gray-800 px-4 pt-4 pb-4 space-y-4">
 
                   {/* QR */}
                   <div
-                    className="bg-white p-3 rounded-xl cursor-pointer"
+                    className="flex items-center gap-4 bg-gray-800 rounded-xl p-3 border cursor-pointer"
                     onClick={() => setEnlargedQr(order)}
                   >
-                    <QRCode value={order.transaction_id} size={100} />
+                    <div className="bg-white rounded-lg p-1">
+                      <QRCode value={order?.transaction_id || "INVALID"} size={80} />
+                    </div>
+
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-500 mb-1">Receipt QR</p>
+                      <p className="text-white font-mono text-xs truncate">
+                        {order?.transaction_id || "N/A"}
+                      </p>
+                    </div>
                   </div>
 
                   {/* META */}
-                  <div className="space-y-2 text-sm">
-                    <p><b>Transaction:</b> {order.transaction_id}</p>
-                    <p><b>Store:</b> {order.store_name}</p>
-                    <p><b>Payment:</b> {order.payment_method}</p>
-                    <p><b>Status:</b> {status}</p>
+                  <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Transaction ID</span>
+                      <span className="text-white font-mono text-xs">
+                        {order?.transaction_id || "N/A"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Payment</span>
+                      <span className="flex items-center gap-1 text-white">
+                        {paymentIcon(order.payment_method)}
+                        {order.payment_method}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* DOWNLOAD */}
+                  {/* TOTAL */}
+                  <div className="flex justify-between items-center border-t border-gray-700 pt-3">
+                    <span className="font-semibold text-white">Total Paid</span>
+                    <span className="text-xl font-bold text-yellow-400">
+                      ₹{order.total_amount ? order.total_amount.toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+
                   <Button onClick={() => downloadInvoice(order)}>
                     <Download className="w-4 h-4 mr-2" />
                     Download Invoice
@@ -146,13 +174,16 @@ export default function History() {
         })}
       </div>
 
-      {/* 🔥 ENLARGED QR */}
+      {/* MODAL */}
       {enlargedQr && (
-        <div className="fixed inset-0 bg-black/80 flex justify-center items-center">
-          <div className="bg-gray-900 p-6 rounded-xl text-center">
-            <QRCode value={enlargedQr.transaction_id} size={200} />
-            <p className="mt-4">{enlargedQr.transaction_id}</p>
-            <button onClick={() => setEnlargedQr(null)}>Close</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6">
+          <div className="bg-gray-900 p-8 rounded-3xl text-center relative">
+            <button onClick={() => setEnlargedQr(null)} className="absolute top-4 right-4">
+              <X />
+            </button>
+
+            <QRCode value={enlargedQr?.transaction_id || "INVALID"} size={220} />
+            <p className="mt-4">{enlargedQr?.transaction_id}</p>
           </div>
         </div>
       )}
