@@ -88,39 +88,39 @@ router.post("/checkout", async (req, res) => {
       });
     }
 
-    // 2. Insert order items
-    const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
-      ...item,
-      order_id: order.order_id
-    }));
+    // 🔴 TEMP DISABLE ORDER ITEMS INSERT
 
-    const { error: insertOrderItemsError } = await supabase
-      .from("order_items")
-      .insert(orderItemsWithOrderId);
+// const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
+//   ...item,
+//   order_id: order.order_id
+// }));
 
-    if (insertOrderItemsError) throw insertOrderItemsError;
+// const { error: insertOrderItemsError } = await supabase
+//   .from("order_items")
+//   .insert(orderItemsWithOrderId);
 
-    // 3. Deduct inventory from store_products (best-effort, skip if fails)
-    for (const item of items) {
-      try {
-        const { data: stockRow } = await supabase
-          .from("store_products")
-          .select("stock")
-          .eq("store_id", store_id)
-          .eq("product_id", item.product_id)
-          .single();
+// if (insertOrderItemsError) throw insertOrderItemsError;
 
-        if (stockRow && stockRow.stock >= item.quantity) {
-          await supabase
-            .from("store_products")
-            .update({ stock: stockRow.stock - item.quantity })
-            .eq("store_id", store_id)
-            .eq("product_id", item.product_id);
-        }
-      } catch (_) {
-        // Non-fatal: do not block checkout if inventory deduction fails
-      }
-    }
+    // 🔴 TEMP DISABLE INVENTORY UPDATE
+
+// for (const item of items) {
+//   try {
+//     const { data: stockRow } = await supabase
+//       .from("store_products")
+//       .select("stock")
+//       .eq("store_id", store_id)
+//       .eq("product_id", item.product_id)
+//       .single();
+
+//     if (stockRow && stockRow.stock >= item.quantity) {
+//       await supabase
+//         .from("store_products")
+//         .update({ stock: stockRow.stock - item.quantity })
+//         .eq("store_id", store_id)
+//         .eq("product_id", item.product_id);
+//     }
+//   } catch (_) {}
+// }
 
     res.json({
       message: "Order created",
