@@ -80,7 +80,13 @@ router.post("/checkout", async (req, res) => {
       .select()
       .single();
 
-    if (orderError) throw orderError;
+    if (orderError) {
+      console.error("❌ ORDER INSERT ERROR:", orderError);
+      return res.status(500).json({
+        error: "Order insert failed",
+        detail: orderError.message
+      });
+    }
 
     // 2. Insert order items
     const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
@@ -123,9 +129,12 @@ router.post("/checkout", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Checkout error:", err);
-    res.status(500).json({ error: "Checkout failed", detail: err?.message });
-  }
+      console.error("🔥 FULL CHECKOUT ERROR:", err);
+      res.status(500).json({
+        error: "Checkout failed",
+        detail: err?.message || err
+      });
+    }
 });
 
 export default router;
