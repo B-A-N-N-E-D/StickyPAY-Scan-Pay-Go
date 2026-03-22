@@ -153,7 +153,8 @@ export default function Cart() {
         // [FIX BUG 8] stop if checkout failed — do not proceed to payment
         if (!checkoutRes.ok) {
           const errData = await checkoutRes.json();
-          alert(errData.message || errData.error || 'Checkout failed. Please try again.');
+          console.log("🔥 BACKEND ERROR:", errData); // IMPORTANT
+          alert(errData.detail || errData.error || "Checkout failed");
           setProcessing(false);
           return;
         }

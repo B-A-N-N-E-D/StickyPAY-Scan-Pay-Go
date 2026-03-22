@@ -60,9 +60,16 @@ router.post("/checkout", async (req, res) => {
     });
 
     // 1. Create order
-    const transaction_id = `TXN-${Date.now()}`;
+    const transaction_id = `TXN-${Date.now()}-${Math.floor(Math.random()*1000)}`;
     const qrCode = transaction_id;
-    console.log("Generated QR:", qrCode);
+
+    console.log("🔥 INSERTING ORDER:", {
+      user_id,
+      store_id,
+      totalAmount,
+      qrCode,
+      transaction_id
+    });
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -74,16 +81,17 @@ router.post("/checkout", async (req, res) => {
           payment_status: "paid",
           qr_code: qrCode,
           transaction_id: transaction_id,
-          verified: false
+          verified: false,
+          store_name: "Store" // ✅ ADD THIS
         }
       ])
       .select()
       .single();
 
     if (orderError) {
-      console.error("❌ ORDER INSERT ERROR:", orderError);
+      console.error("❌ SUPABASE ERROR:", orderError);
       return res.status(500).json({
-        error: "Order insert failed",
+        error: "Insert failed",
         detail: orderError.message
       });
     }
