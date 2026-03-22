@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Receipt, ChevronDown, ChevronUp, CreditCard, Wallet, Smartphone,
-  Store, CheckCircle2, Package, Download, ShieldCheck, Clock, X
+  CheckCircle2, Download, ShieldCheck, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -45,7 +45,6 @@ export default function History() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [enlargedQr, setEnlargedQr] = useState(null);
 
-  // 🔥 FETCH ORDERS FROM SUPABASE
   useEffect(() => {
     const fetchOrders = async () => {
       const { data, error } = await supabase
@@ -120,12 +119,12 @@ export default function History() {
               {expandedOrder === order.order_id && (
                 <div className="border-t border-gray-800 px-4 pt-4 pb-4 space-y-4">
 
-                  {/* QR */}
+                  {/* 🔥 QR WITH ORANGE BORDER */}
                   <div
                     className="flex items-center gap-4 bg-gray-800 rounded-xl p-3 border cursor-pointer"
                     onClick={() => setEnlargedQr(order)}
                   >
-                    <div className="bg-white rounded-lg p-1">
+                    <div className="bg-white p-2 rounded-xl border-4 border-orange-500 shadow-[0_0_15px_rgba(255,115,0,0.6)]">
                       <QRCode value={order?.transaction_id || "INVALID"} size={80} />
                     </div>
 
@@ -174,16 +173,30 @@ export default function History() {
         })}
       </div>
 
-      {/* MODAL */}
+      {/* 🔥 MODAL WITH PREMIUM QR */}
       {enlargedQr && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6">
-          <div className="bg-gray-900 p-8 rounded-3xl text-center relative">
-            <button onClick={() => setEnlargedQr(null)} className="absolute top-4 right-4">
+          <div className="bg-[#0f172a] p-8 rounded-3xl text-center relative border border-gray-800">
+
+            <button onClick={() => setEnlargedQr(null)} className="absolute top-4 right-4 text-gray-400">
               <X />
             </button>
 
-            <QRCode value={enlargedQr?.transaction_id || "INVALID"} size={220} />
-            <p className="mt-4">{enlargedQr?.transaction_id}</p>
+            <h2 className="text-white text-xl font-bold mb-4">
+              Security QR Code
+            </h2>
+
+            <div className="bg-white p-4 rounded-2xl border-4 border-orange-500 shadow-[0_0_25px_rgba(255,115,0,0.7)]">
+              <QRCode value={enlargedQr?.transaction_id || "INVALID"} size={220} />
+            </div>
+
+            <p className="mt-4 text-gray-300 font-mono">
+              {enlargedQr?.transaction_id}
+            </p>
+
+            <div className="mt-4 bg-orange-500/20 text-orange-400 px-4 py-2 rounded-xl text-sm font-semibold">
+              ⏳ Pending Security Check
+            </div>
           </div>
         </div>
       )}
