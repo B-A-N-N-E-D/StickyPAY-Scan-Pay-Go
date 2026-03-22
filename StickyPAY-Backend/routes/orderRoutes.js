@@ -96,39 +96,39 @@ router.post("/checkout", async (req, res) => {
       });
     }
 
-    // 🔴 TEMP DISABLE ORDER ITEMS INSERT
+    // 2. Insert order items
+    const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
+      ...item,
+      order_id: order.order_id
+    }));
 
-// const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
-//   ...item,
-//   order_id: order.order_id
-// }));
+    const { error: insertOrderItemsError } = await supabase
+      .from("order_items")
+      .insert(orderItemsWithOrderId);
 
-// const { error: insertOrderItemsError } = await supabase
-//   .from("order_items")
-//   .insert(orderItemsWithOrderId);
+    if (insertOrderItemsError) throw insertOrderItemsError;
 
-// if (insertOrderItemsError) throw insertOrderItemsError;
+    // 3. Deduct inventory from store_products
+    for (const item of items) {
+      try {
+        const { data: stockRow } = await supabase
+          .from("store_products")
+          .select("stock")
+          .eq("store_id", store_id)
+          .eq("product_id", item.product_id)
+          .single();
 
-    // 🔴 TEMP DISABLE INVENTORY UPDATE
-
-// for (const item of items) {
-//   try {
-//     const { data: stockRow } = await supabase
-//       .from("store_products")
-//       .select("stock")
-//       .eq("store_id", store_id)
-//       .eq("product_id", item.product_id)
-//       .single();
-
-//     if (stockRow && stockRow.stock >= item.quantity) {
-//       await supabase
-//         .from("store_products")
-//         .update({ stock: stockRow.stock - item.quantity })
-//         .eq("store_id", store_id)
-//         .eq("product_id", item.product_id);
-//     }
-//   } catch (_) {}
-// }
+        if (stockRow && stockRow.stock >= item.quantity) {
+          await supabase
+            .from("store_products")
+            .update({ stock: stockRow.stock - item.quantity })
+            .eq("store_id", store_id)
+            .eq("product_id", item.product_id);
+        }
+      } catch (_) {
+        // ignore
+      }
+    }
 
     res.json({
       message: "Order created",
