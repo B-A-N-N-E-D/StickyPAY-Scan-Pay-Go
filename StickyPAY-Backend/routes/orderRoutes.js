@@ -87,7 +87,7 @@ router.post("/checkout", async (req, res) => {
       ])
       .select("order_id")
       .single();
-    const order_id = orderData?.order_id;  
+ 
 
     if (orderError) {
       console.error("❌ SUPABASE ERROR:", orderError);
@@ -97,11 +97,11 @@ router.post("/checkout", async (req, res) => {
       });
     }
     
-    
+    const order_id = orderData.order_id;
     // 2. Insert order items
     const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
       ...item,
-      order_id: order.order_id
+      order_id: order_id
     }));
 
     const { error: insertOrderItemsError } = await supabase
@@ -134,7 +134,7 @@ router.post("/checkout", async (req, res) => {
 
     res.json({
       message: "Order created",
-      order,
+      order: orderData,   // ✅ FIXED
       qr_code: qrCode
     });
 
