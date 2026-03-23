@@ -71,7 +71,7 @@ router.post("/checkout", async (req, res) => {
       transaction_id
     });
 
-    const { data: order, error: orderError } = await supabase
+    const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .insert([
         {
@@ -85,8 +85,9 @@ router.post("/checkout", async (req, res) => {
           store_name: "Store" // ✅ ADD THIS
         }
       ])
-      .select()
+      .select("order_id")
       .single();
+    const order_id = orderData?.order_id;  
 
     if (orderError) {
       console.error("❌ SUPABASE ERROR:", orderError);
