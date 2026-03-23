@@ -96,7 +96,8 @@ router.post("/checkout", async (req, res) => {
         detail: orderError.message
       });
     }
-
+    
+    
     // 2. Insert order items
     const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
       ...item,

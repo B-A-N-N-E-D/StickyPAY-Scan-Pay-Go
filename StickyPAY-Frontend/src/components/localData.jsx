@@ -43,10 +43,10 @@ export const verifyOrder = (orderId) => {
     return updated.find(o => o.id === orderId);
 };
 
-export const saveOrder = (orderData) => {
+export const saveOrder = (order) => {
     const orders = getOrders();
     const newOrder = {
-        ...orderData,
+        ...order,
         id: 'SP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
         created_date: new Date().toISOString(),
         status: 'paid',
