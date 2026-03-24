@@ -19,8 +19,8 @@ const paymentIcon = (method) => {
 const downloadInvoice = (order) => {
   let itemLines = [];
 
-  if (order.items && Array.isArray(order.items)) {
-    itemLines = order.items.map((item, i) =>
+  if (items && Array.isArray(items)) {
+    itemLines = items.map((item, i) =>
       `${i + 1}. ${item.name} x${item.qty} - ₹${item.price * item.qty}`
     );
   }
@@ -89,6 +89,9 @@ export default function History() {
         )}
 
         {orders.map((order) => {
+          const items = typeof order.items === "string"
+            ? JSON.parse(order.items)
+            : order.items;
           const status = order.verified ? 'verified' : 'pending';
 
           return (
@@ -173,7 +176,7 @@ export default function History() {
                     <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
                       <p className="text-gray-400 font-semibold mb-1">Items</p>
 
-                      {order.items.map((item, index) => (
+                      {items.map((item, index) => (
                         <div key={index} className="flex justify-between text-white">
                           <span>
                             {item.name} x{item.qty}

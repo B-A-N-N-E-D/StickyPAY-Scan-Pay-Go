@@ -123,7 +123,7 @@ export default function OrderHistory() {
                       <p className="text-gray-500 text-xs uppercase tracking-wider">Items</p>
                     </div>
                     <div className="space-y-2">
-                      {order.items.map((item, idx) => (
+                      {items.map((item, idx) => (
                         <div key={idx} className="flex justify-between items-center bg-gray-800 rounded-xl px-3 py-2.5 text-sm">
                           <div>
                             <p className="font-medium text-white">{item.name}</p>
