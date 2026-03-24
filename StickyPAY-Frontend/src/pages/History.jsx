@@ -15,13 +15,17 @@ const paymentIcon = (method) => {
   return <Smartphone className="w-4 h-4" />;
 };
 
-// Invoice
+// ✅ FIXED INVOICE FUNCTION
 const downloadInvoice = (order) => {
+  const items = typeof order.items === "string"
+    ? JSON.parse(order.items)
+    : order.items;
+
   let itemLines = [];
 
   if (items && Array.isArray(items)) {
     itemLines = items.map((item, i) =>
-      `${i + 1}. ${item.name} x${item.qty} - ₹${item.price * item.qty}`
+      `${i + 1}. ${item.name} x${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`
     );
   }
 
@@ -37,9 +41,7 @@ const downloadInvoice = (order) => {
     '----------------------------------------',
     'ITEMS',
     '----------------------------------------',
-    ...(items || []).map(item =>
-      `${item.name.padEnd(20)} x${item.quantity}  ₹${(item.price * item.quantity).toFixed(2)}`
-    ),
+    ...(itemLines.length ? itemLines : ['No items found']),
     '----------------------------------------',
     `TOTAL PAID     : ₹${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}`,
     '========================================',
@@ -89,9 +91,11 @@ export default function History() {
         )}
 
         {orders.map((order) => {
+          // ✅ FIX: handle string/array items
           const items = typeof order.items === "string"
             ? JSON.parse(order.items)
             : order.items;
+
           const status = order.verified ? 'verified' : 'pending';
 
           return (
@@ -114,7 +118,7 @@ export default function History() {
                   <div>
                     <p className="font-semibold text-white">{order.store_name || 'Store'}</p>
                     <p className="text-gray-500 text-xs">
-                      {order.created_at ? format(new Date(order.created_at), 'dd MMM yyyy, hh:mm a') : '—'}
+                      {order.created_at ? format(new Date(order.created_at + 'Z'), 'dd MMM yyyy, hh:mm a') : '—'}
                     </p>
                     <span className={`text-xs font-semibold ${status === 'verified' ? 'text-blue-400' : 'text-orange-400'}`}>
                       {status === 'verified' ? '✓ Security Verified' : '⏳ Pending security check'}
@@ -136,7 +140,7 @@ export default function History() {
               {expandedOrder === order.order_id && (
                 <div className="border-t border-gray-800 px-4 pt-4 pb-4 space-y-4">
 
-                  {/* 🔥 QR WITH ORANGE BORDER */}
+                  {/* QR */}
                   <div
                     className="flex items-center gap-4 bg-gray-800 rounded-xl p-3 border cursor-pointer"
                     onClick={() => setEnlargedQr(order)}
@@ -171,18 +175,18 @@ export default function History() {
                     </div>
                   </div>
 
-                  {/* 🧾 ITEMS LIST 👉 ADD HERE */}
-                  {order.items && Array.isArray(order.items) && (
+                  {/* ✅ ITEMS LIST */}
+                  {items && Array.isArray(items) && (
                     <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
                       <p className="text-gray-400 font-semibold mb-1">Items</p>
 
                       {items.map((item, index) => (
                         <div key={index} className="flex justify-between text-white">
                           <span>
-                            {item.name} x{item.qty}
+                            {item.name} x{item.quantity}
                           </span>
                           <span className="text-yellow-400">
-                            ₹{(item.price * item.qty).toFixed(2)}
+                            ₹{(item.price * item.quantity).toFixed(2)}
                           </span>
                         </div>
                       ))}
@@ -208,7 +212,7 @@ export default function History() {
         })}
       </div>
 
-      {/* 🔥 MODAL WITH PREMIUM QR */}
+      {/* QR MODAL */}
       {enlargedQr && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6">
           <div className="bg-[#0f172a] p-8 rounded-3xl text-center relative border border-gray-800">
