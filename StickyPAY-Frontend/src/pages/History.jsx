@@ -165,7 +165,7 @@ export default function History() {
                     </div>
                   </div>
 
-                  {/* 🧾 ITEMS LIST */}
+                  {/* 🧾 ITEMS LIST 👉 ADD HERE */}
                   {order.items && Array.isArray(order.items) && (
                     <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
                       <p className="text-gray-400 font-semibold mb-1">Items</p>
