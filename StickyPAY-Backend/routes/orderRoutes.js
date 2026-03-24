@@ -1,6 +1,5 @@
 import express from "express";
 import { supabase } from "../config/supabase.js";
-import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -32,13 +31,10 @@ router.get("/:user_id", async (req, res) => {
 });
 
 // POST /checkout
-// Accepts items directly from the frontend (cart is localStorage-based,
-// so we never read from a Supabase cart table here)
 router.post("/checkout", async (req, res) => {
   try {
     const { user_id, store_id, items } = req.body;
 
-    // items: [{ product_id, quantity, price }]
     if (!user_id || !store_id) {
       return res.status(400).json({ message: "user_id and store_id are required" });
     }
@@ -47,7 +43,7 @@ router.post("/checkout", async (req, res) => {
       return res.status(400).json({ message: "No items in cart" });
     }
 
-    // Calculate total from frontend-provided items
+    // Calculate total
     let totalAmount = 0;
     const orderItemsToInsert = items.map((item) => {
       const itemTotal = item.price * item.quantity;
@@ -59,18 +55,13 @@ router.post("/checkout", async (req, res) => {
       };
     });
 
-    // 1. Create order
-    const transaction_id = `TXN-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+    // Generate transaction ID and QR code
+    const transaction_id = `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const qrCode = transaction_id;
 
-    console.log("🔥 INSERTING ORDER:", {
-      user_id,
-      store_id,
-      totalAmount,
-      qrCode,
-      transaction_id
-    });
+    console.log("🔥 INSERTING ORDER:", { user_id, store_id, totalAmount, qrCode, transaction_id });
 
+    // 1. Create order
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert([
@@ -82,37 +73,34 @@ router.post("/checkout", async (req, res) => {
           qr_code: qrCode,
           transaction_id: transaction_id,
           verified: false,
-          store_name: "Store"
-        }
+          store_name: "Store",
+        },
       ])
       .select()
       .single();
 
-    // ✅ Detailed error logging
     if (orderError) {
       console.error("❌ SUPABASE INSERT ERROR:", JSON.stringify(orderError));
       return res.status(500).json({
         error: "Insert failed",
         detail: orderError.message,
         hint: orderError.hint,
-        code: orderError.code
+        code: orderError.code,
       });
     }
 
-    // ✅ Guard against null order
     if (!order) {
       console.error("❌ ORDER IS NULL after insert");
       return res.status(500).json({
         error: "Insert failed",
-        detail: "order is not defined — Supabase returned no data"
+        detail: "order is not defined — Supabase returned no data",
       });
     }
-    
-    const order_id = orderData.order_id;
-    // 2. Insert order items
-    const orderItemsWithOrderId = orderItemsToInsert.map(item => ({
+
+    // 2. Insert order items  ✅ FIXED: was orderData.order_id, now order.order_id
+    const orderItemsWithOrderId = orderItemsToInsert.map((item) => ({
       ...item,
-      order_id: order_id
+      order_id: order.order_id,
     }));
 
     const { error: insertOrderItemsError } = await supabase
@@ -121,7 +109,7 @@ router.post("/checkout", async (req, res) => {
 
     if (insertOrderItemsError) throw insertOrderItemsError;
 
-    // 3. Deduct inventory from store_products
+    // 3. Deduct inventory
     for (const item of items) {
       try {
         const { data: stockRow } = await supabase
@@ -139,23 +127,23 @@ router.post("/checkout", async (req, res) => {
             .eq("product_id", item.product_id);
         }
       } catch (_) {
-        // ignore
+        // ignore stock errors
       }
     }
 
     res.json({
       message: "Order created",
-      order: orderData,   // ✅ FIXED
-      qr_code: qrCode
+      order: order,       // ✅ FIXED: was orderData
+      qr_code: qrCode,
     });
 
   } catch (err) {
-      console.error("🔥 FULL CHECKOUT ERROR:", err);
-      res.status(500).json({
-        error: "Checkout failed",
-        detail: err?.message || err
-      });
-    }
+    console.error("🔥 FULL CHECKOUT ERROR:", err);
+    res.status(500).json({
+      error: "Checkout failed",
+      detail: err?.message || err,
+    });
+  }
 });
 
 export default router;
