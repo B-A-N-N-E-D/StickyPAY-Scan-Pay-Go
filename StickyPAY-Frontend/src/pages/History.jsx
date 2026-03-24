@@ -35,8 +35,11 @@ const downloadInvoice = (order) => {
     `Payment Mode   : ${order.payment_method || '—'}`,
     `Status         : ${order.verified ? 'verified' : 'pending'}`,
     '----------------------------------------',
-    'Items:',
-    ...(itemLines.length ? itemLines : ['No items found']),
+    'ITEMS',
+    '----------------------------------------',
+    ...(order.items || []).map(item =>
+      `${item.name.padEnd(20)} x${item.quantity}  ₹${(item.price * item.quantity).toFixed(2)}`
+    ),
     '----------------------------------------',
     `TOTAL PAID     : ₹${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}`,
     '========================================',
