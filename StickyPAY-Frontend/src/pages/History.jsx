@@ -28,7 +28,11 @@ const parseItems = (rawItems) => {
 
 // ✅ FIXED INVOICE FUNCTION
 const downloadInvoice = (order) => {
-  const items = parseItems(order.items);
+  const items = order.payments?.payment_items?.map(item => ({
+    name: item.products?.name,
+    quantity: item.quantity,
+    price: item.price
+  })) || [];
 
   const itemLines = items.length > 0
     ? items.map((item, i) => {
@@ -74,7 +78,19 @@ export default function History() {
     const fetchOrders = async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*")
+        .select(`
+          *,
+          payments (
+            payment_id,
+            payment_items (
+              quantity,
+              price,
+              products (
+                name
+              )
+            )
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (!error) setOrders(data || []);
@@ -100,7 +116,11 @@ export default function History() {
         )}
 
         {orders.map((order) => {
-          const items = parseItems(order.items);
+          const items = order.payments?.payment_items?.map(item => ({
+            name: item.products?.name,
+            quantity: item.quantity,
+            price: item.price
+          })) || [];
           const status = order.verified ? 'verified' : 'pending';
 
           return (
