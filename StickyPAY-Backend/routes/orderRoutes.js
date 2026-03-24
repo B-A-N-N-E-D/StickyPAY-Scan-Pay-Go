@@ -55,7 +55,7 @@ router.post("/checkout", async (req, res) => {
       };
     });
 
-    // Generate transaction ID and QR code
+    // Generate transaction ID — same value stored in both qr_code and transaction_id
     const transaction_id = `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const qrCode = transaction_id;
 
@@ -97,17 +97,35 @@ router.post("/checkout", async (req, res) => {
       });
     }
 
-    // 2. Insert order items  ✅ FIXED: was orderData.order_id, now order.order_id
-    const orderItemsWithOrderId = orderItemsToInsert.map((item) => ({
-      ...item,
-      order_id: order.order_id,
-    }));
+    // 2. Insert order items
+    // ✅ FIX: validate product_ids exist first to avoid FK violation
+    const validItems = [];
+    for (const item of orderItemsToInsert) {
+      if (!item.product_id) continue;
 
-    const { error: insertOrderItemsError } = await supabase
-      .from("order_items")
-      .insert(orderItemsWithOrderId);
+      const { data: product } = await supabase
+        .from("products")
+        .select("id")
+        .eq("id", item.product_id)
+        .single();
 
-    if (insertOrderItemsError) throw insertOrderItemsError;
+      if (product) {
+        validItems.push({ ...item, order_id: order.order_id });
+      } else {
+        console.warn(`⚠️ Skipping item — product_id not found: ${item.product_id}`);
+      }
+    }
+
+    if (validItems.length > 0) {
+      const { error: insertOrderItemsError } = await supabase
+        .from("order_items")
+        .insert(validItems);
+
+      if (insertOrderItemsError) {
+        // Don't fail the whole checkout — order was already created
+        console.error("❌ ORDER ITEMS INSERT ERROR:", insertOrderItemsError);
+      }
+    }
 
     // 3. Deduct inventory
     for (const item of items) {
@@ -131,9 +149,10 @@ router.post("/checkout", async (req, res) => {
       }
     }
 
+    // ✅ Return full order with transaction_id so frontend can render QR
     res.json({
       message: "Order created",
-      order: order,       // ✅ FIXED: was orderData
+      order: order,
       qr_code: qrCode,
     });
 

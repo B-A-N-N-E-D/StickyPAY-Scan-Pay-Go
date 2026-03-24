@@ -37,8 +37,6 @@ export default function Cart() {
     if (data && data.items && data.items.length > 0) {
       setCartData(data);
       setItems(data.items);
-    } else {
-      console.log("Cart is empty or not loaded properly");
     }
   }, []);
 
@@ -52,7 +50,6 @@ export default function Cart() {
 
   const syncCartWithDB = (productId, newQty, action) => {
     if (!user?.id) return;
-
     fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -113,35 +110,27 @@ export default function Cart() {
     if (redeemCoins && coinDiscount > 0) redeemTokensFn(coinDiscount);
     const finalAmount = Math.max(0, applyDiscount(totalAmount) - coinDiscount);
 
-    // Hit the backend logic for checkout
     try {
       if (user?.id) {
-        // [FIX BUG 4] use store_id field correctly
         const storeId = activeStore?.store_id || activeStore?.id;
-
         const freshCart = getCart();
         const updatedItems = freshCart?.items || [];
-
-
-        console.log("CHECKOUT ITEMS:", updatedItems);
 
         if (!updatedItems || updatedItems.length === 0) {
           alert("Cart is empty!");
           setProcessing(false);
           return;
         }
-      console.log("SENDING TO BACKEND:", {
-        user_id: user.id,
-        store_id: storeId,
-        items: updatedItems
-      });  
 
-      const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/checkout`, {
+        console.log("SENDING TO BACKEND:", { user_id: user.id, store_id: storeId, items: updatedItems });
+
+        const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: user.id,
             store_id: storeId,
+            // ✅ FIX BUG 1: always use product_id field, fallback to id
             items: updatedItems.map(item => ({
               product_id: item.product_id || item.id,
               quantity: item.quantity,
@@ -150,29 +139,50 @@ export default function Cart() {
           })
         });
 
-        // [FIX BUG 8] stop if checkout failed — do not proceed to payment
         if (!checkoutRes.ok) {
           const errData = await checkoutRes.json();
-          console.log("🔥 BACKEND ERROR:", errData); // IMPORTANT
+          console.log("🔥 BACKEND ERROR:", errData);
           alert(errData.detail || errData.error || "Checkout failed");
           setProcessing(false);
           return;
         }
 
-        const { order: newBackendOrder } = await checkoutRes.json();
+        const checkoutData = await checkoutRes.json();
+        const backendOrder = checkoutData.order; // ✅ the real order from DB
 
-        // Process Payment on the backend as well
+        // Confirm payment
         await fetch(`${import.meta.env.VITE_API_URL}/api/payments/confirm`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            order_id: newBackendOrder.order_id,
+            order_id: backendOrder.order_id,
             user_id: user.id,
             store_id: storeId,
             amount: finalAmount,
             payment_method: method
           })
         });
+
+        // ✅ FIX BUG 2: use backendOrder (has transaction_id) for QR receipt
+        // Merge with local data for display (store_name, payment_method etc.)
+        const displayOrder = {
+          ...backendOrder,
+          store_name: activeStore?.name || backendOrder.store_name || 'Store',
+          payment_method: method,
+        };
+
+        // ✅ FIX BUG 3: clear items state so cart shows empty
+        clearCart();
+        clearStore();
+        setItems([]);
+
+        const { earned } = awardTokens(backendOrder.order_id, finalAmount);
+
+        setOrder(displayOrder);
+        setShowReceipt(true);
+        setShowPaymentSheet(false);
+        setProcessing(false);
+        return;
       }
     } catch (err) {
       console.error("Order API failed", err);
@@ -181,11 +191,13 @@ export default function Cart() {
       return;
     }
 
+    // Fallback for non-logged-in users (offline mode)
     const newOrder = saveOrder({
       store_id: activeStore?.id || 'unknown',
       store_name: activeStore?.name || 'Store',
       items: items.map(item => ({
-        product_id: item.product_id || item.id,        name: item.name,
+        product_id: item.product_id || item.id,
+        name: item.name,
         price: item.price,
         quantity: item.quantity,
       })),
@@ -195,6 +207,7 @@ export default function Cart() {
 
     clearCart();
     clearStore();
+    setItems([]);
     const { earned } = awardTokens(newOrder.id, finalAmount);
     newOrder._tokensEarned = earned;
     setOrder(newOrder);
@@ -244,7 +257,6 @@ export default function Cart() {
         {items.map((item) => (
           <div key={item.id} className="bg-[#0f1117] rounded-2xl p-4 border border-gray-800/70">
             <div className="flex items-start gap-3">
-              {/* Left: info */}
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-sm text-white">{item.name}</h3>
                 {(item.brand || item.weight || item.category) && (
@@ -259,8 +271,6 @@ export default function Cart() {
                   {item.exp_date && <p className="text-gray-500 text-xs">EXP: {item.exp_date}</p>}
                 </div>
               </div>
-
-              {/* Right: qty controls + delete */}
               <div className="flex flex-col items-end gap-2 flex-shrink-0">
                 <div className="flex items-center gap-1 bg-gray-800 rounded-xl p-1">
                   <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
@@ -276,8 +286,6 @@ export default function Cart() {
                 </button>
               </div>
             </div>
-
-            {/* Subtotal row */}
             <div className="text-right mt-2 text-xs text-gray-500 border-t border-gray-800 pt-2">
               Subtotal: <span className="text-white font-semibold">₹{(item.price * item.quantity).toFixed(2)}</span>
             </div>
