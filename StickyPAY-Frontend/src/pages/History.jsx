@@ -37,7 +37,7 @@ const downloadInvoice = (order) => {
     '----------------------------------------',
     'ITEMS',
     '----------------------------------------',
-    ...(order.items || []).map(item =>
+    ...(items || []).map(item =>
       `${item.name.padEnd(20)} x${item.quantity}  ₹${(item.price * item.quantity).toFixed(2)}`
     ),
     '----------------------------------------',
