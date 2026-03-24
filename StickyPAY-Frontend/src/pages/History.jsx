@@ -15,19 +15,28 @@ const paymentIcon = (method) => {
   return <Smartphone className="w-4 h-4" />;
 };
 
+// ✅ SAFE ITEM PARSER
+const parseItems = (rawItems) => {
+  try {
+    if (typeof rawItems === "string") return JSON.parse(rawItems);
+    if (Array.isArray(rawItems)) return rawItems;
+  } catch (e) {
+    console.error("Items parse error:", e);
+  }
+  return [];
+};
+
 // ✅ FIXED INVOICE FUNCTION
 const downloadInvoice = (order) => {
-  const items = typeof order.items === "string"
-    ? JSON.parse(order.items)
-    : order.items;
+  const items = parseItems(order.items);
 
-  let itemLines = [];
-
-  if (items && Array.isArray(items)) {
-    itemLines = items.map((item, i) =>
-      `${i + 1}. ${item.name} x${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`
-    );
-  }
+  const itemLines = items.length > 0
+    ? items.map((item, i) => {
+        const qty = item.quantity || item.qty || 1;
+        const price = item.price || 0;
+        return `${i + 1}. ${item.name || "Item"} x${qty} - ₹${(price * qty).toFixed(2)}`;
+      })
+    : ['No items found'];
 
   const lines = [
     '========================================',
@@ -41,7 +50,7 @@ const downloadInvoice = (order) => {
     '----------------------------------------',
     'ITEMS',
     '----------------------------------------',
-    ...(itemLines.length ? itemLines : ['No items found']),
+    ...itemLines,
     '----------------------------------------',
     `TOTAL PAID     : ₹${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}`,
     '========================================',
@@ -91,11 +100,7 @@ export default function History() {
         )}
 
         {orders.map((order) => {
-          // ✅ FIX: handle string/array items
-          const items = typeof order.items === "string"
-            ? JSON.parse(order.items)
-            : order.items;
-
+          const items = parseItems(order.items);
           const status = order.verified ? 'verified' : 'pending';
 
           return (
@@ -170,26 +175,31 @@ export default function History() {
                       <span className="text-gray-500">Payment</span>
                       <span className="flex items-center gap-1 text-white">
                         {paymentIcon(order.payment_method)}
-                        {order.payment_method}
+                        {order.payment_method || "N/A"}
                       </span>
                     </div>
                   </div>
 
                   {/* ✅ ITEMS LIST */}
-                  {items && Array.isArray(items) && (
+                  {items.length > 0 && (
                     <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
                       <p className="text-gray-400 font-semibold mb-1">Items</p>
 
-                      {items.map((item, index) => (
-                        <div key={index} className="flex justify-between text-white">
-                          <span>
-                            {item.name} x{item.quantity}
-                          </span>
-                          <span className="text-yellow-400">
-                            ₹{(item.price * item.quantity).toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
+                      {items.map((item, index) => {
+                        const qty = item.quantity || item.qty || 1;
+                        const price = item.price || 0;
+
+                        return (
+                          <div key={index} className="flex justify-between text-white">
+                            <span>
+                              {item.name || "Item"} x{qty}
+                            </span>
+                            <span className="text-yellow-400">
+                              ₹{(price * qty).toFixed(2)}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
