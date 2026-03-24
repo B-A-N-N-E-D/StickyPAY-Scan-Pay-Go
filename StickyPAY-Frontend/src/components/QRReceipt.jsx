@@ -13,13 +13,13 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from "../lib/utils";
 import { supabase } from "../lib/supabase";
-import QRCode from "react-qr-code"; // ✅ REAL QR
+import QRCode from "react-qr-code";
 
 export default function QRReceipt({ order: initialOrder }) {
   const navigate = useNavigate();
   const [order, setOrder] = useState(initialOrder);
 
-  // 🔥 REALTIME LISTENER (FIXED)
+  // ✅ REALTIME UPDATE (UNCHANGED LOGIC)
   useEffect(() => {
     if (!initialOrder?.order_id) return;
 
@@ -31,7 +31,7 @@ export default function QRReceipt({ order: initialOrder }) {
           event: 'UPDATE',
           schema: 'public',
           table: 'orders',
-          filter: `order_id=eq.${initialOrder.order_id}` // ✅ FIXED
+          filter: `order_id=eq.${initialOrder.order_id}`
         },
         payload => {
           setOrder(payload.new);
@@ -52,7 +52,8 @@ export default function QRReceipt({ order: initialOrder }) {
       animate={{ opacity: 1, scale: 1 }}
       className="bg-gray-900 rounded-3xl p-6 mx-4 border border-gray-800 w-full max-w-sm"
     >
-      {/* HEADER */}
+
+      {/* 🔥 HEADER (MATCHED TO REFERENCE) */}
       <div className="text-center mb-6">
         <motion.div
           key={isVerified ? 'verified' : 'paid'}
@@ -63,11 +64,9 @@ export default function QRReceipt({ order: initialOrder }) {
             isVerified ? 'bg-blue-500' : 'bg-green-500'
           }`}
         >
-          {isVerified ? (
-            <ShieldCheck className="w-10 h-10 text-white" />
-          ) : (
-            <CheckCircle2 className="w-10 h-10 text-black" />
-          )}
+          {isVerified
+            ? <ShieldCheck className="w-10 h-10 text-white" />
+            : <CheckCircle2 className="w-10 h-10 text-black" />}
         </motion.div>
 
         <h2 className="text-2xl font-bold text-white">
@@ -81,21 +80,18 @@ export default function QRReceipt({ order: initialOrder }) {
         </p>
       </div>
 
-      {/* 🔥 REAL QR CODE */}
-      <div
-        className={`rounded-2xl p-4 mb-4 flex flex-col items-center border-4 ${
-          isVerified
-            ? 'bg-white border-blue-400'
-            : 'bg-white border-orange-400'
-        }`}
-      >
+      {/* 🔥 QR (UNCHANGED LOGIC, PREMIUM UI ADDED) */}
+      <div className={`rounded-2xl p-4 mb-4 flex flex-col items-center border-4 ${
+        isVerified
+          ? 'bg-white border-blue-400'
+          : 'bg-white border-orange-400'
+      }`}>
         <QRCode
           value={order?.transaction_id || ""}
           size={200}
         />
 
-        {/* Transaction ID */}
-        <p className="mt-2 text-black font-mono text-sm">
+        <p className="text-center text-black text-xs mt-3 font-mono tracking-widest">
           {order?.transaction_id}
         </p>
 
@@ -109,28 +105,29 @@ export default function QRReceipt({ order: initialOrder }) {
         )}
       </div>
 
-      {/* STATUS */}
+      {/* 🔥 STATUS BANNER (MATCHED) */}
       {!isVerified && (
         <div className="bg-orange-500/10 border border-orange-400/30 rounded-xl px-4 py-3 mb-4 flex items-center gap-3">
           <Clock className="w-5 h-5 text-orange-400 flex-shrink-0" />
           <div>
             <p className="text-orange-400 font-semibold text-sm">
-              Pending Security Check
+              Awaiting Security Check
             </p>
             <p className="text-gray-400 text-xs">
-              Show this QR to the guard. Status updates automatically.
+              Show this QR to the guard at exit. Status updates automatically.
             </p>
           </div>
         </div>
       )}
 
-      {/* ORDER DETAILS */}
+      {/* 🔥 ORDER DETAILS (MATCHED STYLE) */}
       <div className="space-y-3 text-sm">
+
         <div className="flex items-center gap-3 text-gray-300">
           <Store className="w-4 h-4 text-yellow-400" />
           <div>
             <p className="text-xs text-gray-500">Store</p>
-            <p className="font-medium">{order?.store_name}</p>
+            <p className="font-medium">{order?.store_name || 'Store'}</p>
           </div>
         </div>
 
@@ -141,7 +138,7 @@ export default function QRReceipt({ order: initialOrder }) {
             <p className="font-medium">
               {order?.created_at
                 ? format(new Date(order.created_at + 'Z'), 'dd MMM yyyy, hh:mm a')
-                : ""}
+                : '—'}
             </p>
           </div>
         </div>
@@ -151,22 +148,32 @@ export default function QRReceipt({ order: initialOrder }) {
           <div>
             <p className="text-xs text-gray-500">Payment Method</p>
             <p className="font-medium capitalize">
-              {order?.payment_method}
+              {order?.payment_method || 'N/A'}
             </p>
           </div>
         </div>
 
+        {/* 🔥 ITEMS COUNT (NEW - MATCHES REFERENCE) */}
         <div className="border-t border-gray-800 pt-3 mt-2">
-          <div className="flex justify-between">
-            <span className="text-gray-400">Total</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400">
+              Items ({order?.items?.length || 0})
+            </span>
+            <span className="text-gray-300">
+              ₹{order?.total_amount?.toFixed(2) || '0.00'}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-base font-bold text-white">Total Paid</span>
             <span className="text-xl font-bold text-green-500">
-              ₹{order?.total_amount?.toFixed(2)}
+              ₹{order?.total_amount?.toFixed(2) || '0.00'}
             </span>
           </div>
         </div>
       </div>
 
-      {/* BUTTON */}
+      {/* 🔥 BUTTON */}
       <button
         onClick={() => navigate(createPageUrl('Home'))}
         className="mt-5 w-full flex items-center justify-center gap-2 py-3 bg-gray-800 rounded-xl text-gray-300 text-sm font-medium"
