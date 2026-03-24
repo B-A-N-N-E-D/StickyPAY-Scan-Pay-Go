@@ -71,7 +71,7 @@ router.post("/checkout", async (req, res) => {
       transaction_id
     });
 
-    const { data: orderData, error: orderError } = await supabase
+    const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert([
         {
@@ -82,18 +82,29 @@ router.post("/checkout", async (req, res) => {
           qr_code: qrCode,
           transaction_id: transaction_id,
           verified: false,
-          store_name: "Store" // ✅ ADD THIS
+          store_name: "Store"
         }
       ])
-      .select("order_id")
+      .select()
       .single();
- 
 
+    // ✅ Detailed error logging
     if (orderError) {
-      console.error("❌ SUPABASE ERROR:", orderError);
+      console.error("❌ SUPABASE INSERT ERROR:", JSON.stringify(orderError));
       return res.status(500).json({
         error: "Insert failed",
-        detail: orderError.message
+        detail: orderError.message,
+        hint: orderError.hint,
+        code: orderError.code
+      });
+    }
+
+    // ✅ Guard against null order
+    if (!order) {
+      console.error("❌ ORDER IS NULL after insert");
+      return res.status(500).json({
+        error: "Insert failed",
+        detail: "order is not defined — Supabase returned no data"
       });
     }
     
