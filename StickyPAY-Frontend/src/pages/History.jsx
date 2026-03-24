@@ -17,15 +17,26 @@ const paymentIcon = (method) => {
 
 // Invoice
 const downloadInvoice = (order) => {
+  let itemLines = [];
+
+  if (order.items && Array.isArray(order.items)) {
+    itemLines = order.items.map((item, i) =>
+      `${i + 1}. ${item.name} x${item.qty} - ₹${item.price * item.qty}`
+    );
+  }
+
   const lines = [
     '========================================',
     '           StickyPAY INVOICE            ',
     '========================================',
     `Transaction ID : ${order.transaction_id || 'N/A'}`,
-    `Date & Time    : ${order.created_at ? format(new Date(order.created_at), 'dd MMM yyyy, hh:mm a') : '—'}`,
+    `Date & Time    : ${order.created_at ? format(new Date(order.created_at + 'Z'), 'dd MMM yyyy, hh:mm a') : '—'}`,
     `Store          : ${order.store_name || '—'}`,
     `Payment Mode   : ${order.payment_method || '—'}`,
     `Status         : ${order.verified ? 'verified' : 'pending'}`,
+    '----------------------------------------',
+    'Items:',
+    ...(itemLines.length ? itemLines : ['No items found']),
     '----------------------------------------',
     `TOTAL PAID     : ₹${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}`,
     '========================================',
@@ -153,6 +164,24 @@ export default function History() {
                       </span>
                     </div>
                   </div>
+
+                  {/* 🧾 ITEMS LIST */}
+                  {order.items && Array.isArray(order.items) && (
+                    <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
+                      <p className="text-gray-400 font-semibold mb-1">Items</p>
+
+                      {order.items.map((item, index) => (
+                        <div key={index} className="flex justify-between text-white">
+                          <span>
+                            {item.name} x{item.qty}
+                          </span>
+                          <span className="text-yellow-400">
+                            ₹{(item.price * item.qty).toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* TOTAL */}
                   <div className="flex justify-between items-center border-t border-gray-700 pt-3">

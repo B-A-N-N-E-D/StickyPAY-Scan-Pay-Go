@@ -140,7 +140,7 @@ export default function QRReceipt({ order: initialOrder }) {
             <p className="text-xs text-gray-500">Date & Time</p>
             <p className="font-medium">
               {order?.created_at
-                ? format(new Date(order.created_at), 'MMM dd, yyyy • HH:mm')
+                ? format(new Date(order.created_at + 'Z'), 'dd MMM yyyy, hh:mm a')
                 : ""}
             </p>
           </div>
