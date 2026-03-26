@@ -169,9 +169,20 @@ export default function Cart() {
           ...backendOrder,
           store_name: activeStore?.name || backendOrder.store_name || 'Store',
           payment_method: method,
+          items: updatedItems.map(item => ({
+            product_id: item.product_id || item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+          })),
         };
 
-        // ✅ FIX BUG 3: clear items state so cart shows empty
+        // Ensure this is properly displayed in `Home.jsx` recent orders and offline lists
+        const localCached = JSON.parse(localStorage.getItem('sp_orders') || '[]');
+        localCached.unshift({ ...displayOrder, id: displayOrder.order_id, qr_code_data: backendOrder.transaction_id, status: 'paid', created_date: new Date().toISOString() });
+        localStorage.setItem('sp_orders', JSON.stringify(localCached));
+
+        // clear items state so cart shows empty
         clearCart();
         clearStore();
         setItems([]);
