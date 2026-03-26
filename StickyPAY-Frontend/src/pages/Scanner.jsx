@@ -46,7 +46,10 @@ export default function Scanner() {
                 if (storeRes.ok) {
                     storeData = await storeRes.json();
                 } else {
-                    storeData = { id: decodedText, name: decodedText.replace(/_/g, ' ').toUpperCase() || 'Store' };
+                    storeData = {
+                        store_id: decodedText, // ✅ MUST BE UUID
+                        name: decodedText.replace(/_/g, ' ').toUpperCase() || 'Store'
+                    };
                 }
                 saveStore(storeData);
                 const newCart = { store: storeData, items: [], total: 0 };
@@ -54,7 +57,10 @@ export default function Scanner() {
                 setCart(newCart);
                 toast.success(`Entered ${storeData.name}`, { description: 'Now scan product barcodes' });
             } catch (err) {
-                const fallbackStore = { id: decodedText, name: decodedText };
+                const fallbackStore = {
+                    store_id: decodedText, // ✅ FIXED
+                    name: decodedText
+                };
                 saveStore(fallbackStore);
                 saveCart({ store: fallbackStore, items: [], total: 0 });
                 toast.success('Store Set', { description: 'Now scan products' });
@@ -73,7 +79,7 @@ export default function Scanner() {
                 const product = await res.json();
 
                 // Verify if it is from this store or not
-                if (product.store_id && String(product.store_id) !== String(activeStore?.id)) {
+                if (product.store_id && String(product.store_id) !== String(activeStore?.store_id)) {
                     toast.error('Invalid Product', { description: 'This product belongs to a different store' });
                     setLoading(false);
                     return;
@@ -111,7 +117,7 @@ export default function Scanner() {
                         body: JSON.stringify({
                             user_id: currentUser.id,
                             product_id: product.id,
-                            store_id: activeStore?.store_id || activeStore?.id,
+                            store_id: activeStore?.store_id,
                             quantity: existing ? existing.quantity : 1,
                             action: existing ? 'update' : 'add'
                         })

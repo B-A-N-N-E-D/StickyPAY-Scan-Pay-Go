@@ -10,9 +10,16 @@ import QRCode from 'react-qr-code';
 
 // Payment icon
 const paymentIcon = (method) => {
-  if (method === 'card') return <CreditCard className="w-4 h-4" />;
-  if (method === 'wallet') return <Wallet className="w-4 h-4" />;
-  return <Smartphone className="w-4 h-4" />;
+  switch (method?.toLowerCase()) {
+    case "card":
+      return <CreditCard className="w-4 h-4" />;
+    case "wallet":
+      return <Wallet className="w-4 h-4" />;
+    case "upi":
+      return <Smartphone className="w-4 h-4" />;
+    default:
+      return <CreditCard className="w-4 h-4" />;
+  }
 };
 
 // ✅ SAFE ITEM PARSER
@@ -250,8 +257,12 @@ export default function History() {
                     <div className="flex justify-between">
                       <span className="text-gray-500">Payment</span>
                       <span className="flex items-center gap-1 text-white">
-                        {paymentIcon(order.payment?.payment_method)}
-                        {order.payment?.payment_method || "N/A"}
+                        <div className="flex items-center gap-2">
+                          {paymentIcon(order.payment_method)}
+                          <span className="capitalize">
+                            {order.payment_method || "upi"}
+                          </span>
+                        </div>
                       </span>
                     </div>
                   </div>

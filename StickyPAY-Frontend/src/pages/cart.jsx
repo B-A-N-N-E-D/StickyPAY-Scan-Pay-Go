@@ -14,6 +14,7 @@ export default function Cart() {
   const [cartData, setCartData] = useState(null);
   const [items, setItems] = useState([]);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("upi");
   const [showReceipt, setShowReceipt] = useState(false);
   const [order, setOrder] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -60,7 +61,7 @@ export default function Cart() {
       body: JSON.stringify({
         user_id: user.id,
         product_id: productId,
-        store_id: activeStore.store_id, // ✅ FIXED
+        store_id: activeStore.store_id,
         quantity: newQty,
         action
       })
@@ -162,8 +163,9 @@ export default function Cart() {
             order_id: backendOrder.order_id,
             user_id: user.id,
             store_id: storeId,
+            items,
             amount: finalAmount,
-            payment_method: method
+            payment_method: selectedPaymentMethod
           })
         });
 
