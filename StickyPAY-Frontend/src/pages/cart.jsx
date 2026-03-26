@@ -49,18 +49,22 @@ export default function Cart() {
   };
 
   const syncCartWithDB = (productId, newQty, action) => {
-    if (!user?.id) return;
+    if (!user?.id || !activeStore?.store_id) {
+      console.warn("⚠️ Missing user_id or store_id", { user, activeStore });
+      return;
+    }
+
     fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user_id: user.id,
         product_id: productId,
-        store_id: activeStore?.id,
+        store_id: activeStore.store_id, // ✅ FIXED
         quantity: newQty,
         action
       })
-    }).catch(() => { });
+    }).catch(() => {});
   };
 
   const updateQuantity = (itemId, delta) => {
