@@ -8,20 +8,36 @@ router.get("/:user_id", async (req, res) => {
   try {
     const { user_id } = req.params;
 
+    console.log("🔥 FETCHING ORDERS FOR:", user_id);
+
     const { data: orders, error } = await supabase
       .from("orders")
       .select(`
-        *,
-        store:stores (*),
+        order_id,
+        total_amount,
+        created_at,
+        store_name,
+        transaction_id,
+        verified,
         order_items (
-            *,
-            product:products (*)
+          quantity,
+          price,
+          product:products (
+            name
+          )
         )
       `)
       .eq("user_id", user_id)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ SUPABASE ERROR:", error);
+      return res.status(500).json({
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+}
 
     res.json({ orders });
   } catch (err) {
@@ -99,22 +115,10 @@ router.post("/checkout", async (req, res) => {
 
     // 2. Insert order items
     // ✅ FIX: validate product_ids exist first to avoid FK violation
-    const validItems = [];
-    for (const item of orderItemsToInsert) {
-      if (!item.product_id) continue;
-
-      const { data: product } = await supabase
-        .from("products")
-        .select("id")
-        .eq("id", item.product_id)
-        .single();
-
-      if (product) {
-        validItems.push({ ...item, order_id: order.order_id });
-      } else {
-        console.warn(`⚠️ Skipping item — product_id not found: ${item.product_id}`);
-      }
-    }
+    const validItems = orderItemsToInsert.map(item => ({
+      ...item,
+      order_id: order.order_id
+    }));
 
     if (validItems.length > 0) {
       const { error: insertOrderItemsError } = await supabase

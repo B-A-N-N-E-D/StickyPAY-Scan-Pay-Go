@@ -24,7 +24,14 @@ router.get("/", async (req, res) => {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ SUPABASE ERROR:", error);
+      return res.status(500).json({
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+}
 
     res.json(stores.map(normalizeStore));
   } catch (err) {

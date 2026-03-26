@@ -36,7 +36,14 @@ router.get("/", async (req, res) => {
         .eq("store_id", store_id);
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error("❌ SUPABASE ERROR:", error);
+        return res.status(500).json({
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+      }
 
       // Map it back to a flat product array
       const mappedProducts = (data || []).map(p => ({
@@ -49,7 +56,14 @@ router.get("/", async (req, res) => {
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+       console.error("❌ SUPABASE ERROR:", error);
+      return res.status(500).json({
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+}
 
     res.json((data || []).map(normalizeProduct));
   } catch (err) {

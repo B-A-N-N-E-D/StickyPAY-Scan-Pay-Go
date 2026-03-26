@@ -17,7 +17,14 @@ router.get("/:user_id", async (req, res) => {
       `)
       .eq("user_id", user_id);
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ SUPABASE ERROR:", error);
+      return res.status(500).json({
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+}
 
     res.json({ cartItems });
   } catch (err) {
@@ -43,7 +50,14 @@ router.post("/", async (req, res) => {
         .eq("product_id", product_id)
         .eq("store_id", store_id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ SUPABASE ERROR:", error);
+        return res.status(500).json({
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+      }
 
       return res.json({ message: "Item removed from cart" });
     }
@@ -83,7 +97,14 @@ router.post("/", async (req, res) => {
         .select());
     }
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ SUPABASE ERROR:", error);
+      return res.status(500).json({
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+}
 
     const message = action === "update" || existingItem ? "Cart updated" : "Item added to cart";
     res.json({ message, data });

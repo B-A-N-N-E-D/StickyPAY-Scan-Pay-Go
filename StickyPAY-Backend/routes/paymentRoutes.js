@@ -17,7 +17,14 @@ router.get("/:user_id", async (req, res) => {
       .eq("user_id", user_id)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ SUPABASE ERROR:", error);
+      return res.status(500).json({
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+}
 
     res.json({ payments });
   } catch (err) {
@@ -49,7 +56,14 @@ router.post("/confirm", async (req, res) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ SUPABASE ERROR:", error);
+      return res.status(500).json({
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+}
 
     // 2. Fetch order items to populate payment items
     const { data: orderItems, error: orderItemsError } = await supabase
