@@ -117,7 +117,7 @@ export default function History() {
                 price: item.price || 0
               })) || []
             }));
-            console.log("ORDER DATA:", order);
+            console.log("ORDER DATA:", onlineOrders);
           }
         }
 

@@ -62,6 +62,7 @@ export default function QRReceipt({ order: initialOrder }) {
   }, [initialOrder?.order_id]);
 
   const isVerified = order?.verified === true;
+  const txnId = order?.transaction_id || order?.qr_code_data || order?.id || "N/A";
 
   return (
     <motion.div
@@ -100,10 +101,10 @@ export default function QRReceipt({ order: initialOrder }) {
       <div className={`rounded-2xl p-4 mb-4 flex flex-col items-center border-4 ${
         isVerified ? 'bg-white border-blue-400' : 'bg-white border-orange-400'
       }`}>
-        <QRCode value={order?.transaction_id || ""} size={200} />
+        <QRCode value={txnId !== "N/A" ? txnId : ""} size={200} />
 
         <p className="text-black text-xs mt-3 font-mono">
-          {order?.transaction_id}
+          {txnId}
         </p>
 
         {isVerified && (
@@ -135,8 +136,9 @@ export default function QRReceipt({ order: initialOrder }) {
         <div className="flex justify-between">
           <span className="text-gray-500">Transaction ID</span>
           <span className="text-white font-mono text-xs">
-            {order?.transaction_id || "N/A"}
+            {txnId}
           </span>
+
         </div>
 
         <div className="flex justify-between">
