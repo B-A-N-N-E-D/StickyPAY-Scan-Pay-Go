@@ -8,9 +8,15 @@ export const StoreProvider = ({ children }) => {
     useEffect(() => {
         const savedStore = localStorage.getItem("sp_active_store");
         if (savedStore) {
-            setActiveStore(JSON.parse(savedStore));
+            const parsed = JSON.parse(savedStore);
+            console.log("🔥 ACTIVE STORE FROM STORAGE:", parsed); // ✅ ADD HERE
+            setActiveStore(parsed);
         }
     }, []);
+
+    useEffect(() => {
+        console.log("🔥 CURRENT ACTIVE STORE STATE:", activeStore);
+    }, [activeStore]);
 
     const saveStore = (storeData) => {
         localStorage.setItem("sp_active_store", JSON.stringify(storeData));

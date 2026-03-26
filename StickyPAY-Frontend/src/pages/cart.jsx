@@ -112,7 +112,7 @@ export default function Cart() {
 
     try {
       if (user?.id) {
-        const storeId = activeStore?.store_id || activeStore?.id;
+        const storeId = activeStore?.store_id;
         const freshCart = getCart();
         const updatedItems = freshCart?.items || [];
 
