@@ -103,12 +103,21 @@ export default function History() {
             onlineOrders = data.map(order => ({
               ...order,
               order_id: order.order_id || order.id,
+
+              // ✅ FIX STORE NAME HERE
+              store_name:
+                order.store_name ||
+                order.store?.name ||
+                order.stores?.name ||
+                "Store",
+
               items: order.order_items?.map(item => ({
                 name: item.product?.name || item.name || "Item",
                 quantity: item.quantity || 1,
                 price: item.price || 0
               })) || []
             }));
+            console.log("ORDER DATA:", order);
           }
         }
 
@@ -334,8 +343,12 @@ export default function History() {
                     </span>
                   </div>
 
-                  <Button onClick={() => downloadInvoice(order)}>
-                    <Download className="w-4 h-4 mr-2" />
+                  <Button 
+                    onClick={() => downloadInvoice(order)}
+                    className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 py-3 rounded-xl flex items-center justify-center gap-2"
+                    variant="outline"
+                  >
+                    <Download className="w-4 h-4 text-yellow-400" />
                     Download Invoice
                   </Button>
                 </div>

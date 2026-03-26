@@ -147,6 +147,7 @@ export default function Cart() {
             user_id: user.id,
             store_id: storeId,
             payment_method: finalPaymentMethod, // ✅ FIX
+            store_name: activeStore?.name || 'Store',
             items: updatedItems.map(item => ({
               product_id: item.product_id || item.id,
               quantity: item.quantity,

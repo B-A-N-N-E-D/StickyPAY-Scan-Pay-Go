@@ -34,7 +34,7 @@ export default function Profile() {
   const totalSpent = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
 
   const menuItems = [
-    { icon: ShoppingBag, label: 'Order History', page: 'OrderHistory', count: orders.length },
+    { icon: ShoppingBag, label: 'Order History', page: 'History', count: orders.length },
     { icon: CreditCard, label: 'Payment Methods', page: 'PaymentMethods', count: null },
     { icon: Wallet, label: 'My Wallet', page: 'WalletPage', count: null, sub: `₹${wallet.balance.toFixed(2)}` },
     { icon: Bell, label: 'Notifications', page: 'Notifications', count: null },

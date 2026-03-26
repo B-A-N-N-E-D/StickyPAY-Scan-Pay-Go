@@ -65,7 +65,7 @@ router.get("/:user_id", async (req, res) => {
 // ==========================
 router.post("/checkout", async (req, res) => {
   try {
-    const { user_id, store_id, items, payment_method = "UPI" } = req.body;
+    const { user_id, store_id, items, payment_method = "UPI", store_name = "Store" } = req.body;
 
     if (!user_id || !store_id) {
       return res.status(400).json({ message: "user_id and store_id are required" });
@@ -113,7 +113,7 @@ router.post("/checkout", async (req, res) => {
           qr_code: qrCode,
           transaction_id,
           verified: false,
-          store_name: "Store",
+          store_name: store_name,
           created_at: new Date().toISOString() // ✅ FORCE DATE
         },
       ])
