@@ -19,7 +19,7 @@ const downloadInvoice = (order) => {
     `Transaction ID : ${order.qr_code_data || order.id}`,
     `Date & Time    : ${order.created_date ? format(new Date(order.created_date), 'dd MMM yyyy, hh:mm a') : '—'}`,
     `Store          : ${order.store_name || '—'}`,
-    `Payment Mode   : ${order.payment_method || '—'}`,
+    `Payment Mode   : ${order.payment?.payment_method || '—'}`,
     `Status         : ${order.status}`,
     '----------------------------------------',
     'ITEMS',
@@ -103,7 +103,7 @@ export default function OrderHistory() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500">Payment Mode</span>
                     <span className="flex items-center gap-1.5 text-white capitalize">
-                      {paymentIcon(order.payment_method)}{order.payment_method || 'N/A'}
+                      {paymentIcon(order.payment?.payment_method)}{order.payment?.payment_method || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
