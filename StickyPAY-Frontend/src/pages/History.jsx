@@ -3,7 +3,6 @@ import {
   Receipt, ChevronDown, ChevronUp, CreditCard, Wallet, Smartphone,
   CheckCircle2, Download, ShieldCheck, X
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { supabase } from '../lib/supabase';
 import QRCode from 'react-qr-code';
@@ -35,54 +34,54 @@ const parseItems = (rawItems) => {
 
 // ✅ FIXED INVOICE FUNCTION
 const downloadInvoice = (order) => {
-  const items = order.items || [];
-
-  const itemLines = items.length > 0
-    ? order.items.map((item, i) =>
-        `${i + 1}. ${item.name} x${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`
-      )
-    : ['No items found'];
-
-  let formattedDate = '—';
   try {
-    const dateStr = order.created_at || order.created_date;
-    if (dateStr) {
-      formattedDate = format(new Date(dateStr), 'dd MMM yyyy, hh:mm a');
-    }
-  } catch (e) {
-    console.error("Date format error", e);
+    const items = order.items || [];
+
+    const formattedDate = order?.created_at
+      ? new Date(order.created_at).toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+        })
+      : "—";
+
+    const lines = [
+      "========================================",
+      "           StickyPAY INVOICE            ",
+      "========================================",
+      `Transaction ID : ${order.transaction_id || "N/A"}`,
+      `Date & Time    : ${formattedDate}`,
+      `Store          : ${order.store_name || "Store"}`,
+      `Payment Mode   : ${order.payment_method?.toUpperCase() || "N/A"}`,
+      `Status         : ${order.verified ? "Verified" : "Pending"}`, // ✅ comma fixed
+      "----------------------------------------",
+      "ITEMS",
+      "----------------------------------------",
+      ...items.map((item, i) =>
+        `${i + 1}. ${item.name} x${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`
+      ),
+      "----------------------------------------",
+      `TOTAL PAID     : ₹${Number(order.total_amount || 0).toFixed(2)}`,
+      "========================================",
+    ];
+
+    const blob = new Blob([lines.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Invoice_${order.transaction_id || "order"}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error("❌ INVOICE ERROR:", err);
+    alert("Failed to download invoice");
   }
-
-  const lines = [
-    '========================================',
-    '           StickyPAY INVOICE            ',
-    '========================================',
-    `Transaction ID : ${order.transaction_id || order.qr_code_data || 'N/A'}`,
-    `Date & Time    : ${formattedDate}`,
-    `Store          : ${order.store_name || '—'}`,
-    `Payment Mode   : ${order.payment_method ? order.payment_method.toUpperCase() : 'N/A'}`
-    `Status         : ${order.verified || order.status === 'verified' ? 'Verified' : 'Pending'}`,
-    '----------------------------------------',
-    'ITEMS',
-    '----------------------------------------',
-    ...order.items.map(item => {
-      const name = (item.name || 'Item').substring(0, 18).padEnd(20);
-      const qty = item.quantity || 1;
-      const price = item.price || 0;
-      return `${name} x${qty}  ₹${(price * qty).toFixed(2)}`;
-    }),
-    '----------------------------------------',
-    `TOTAL PAID     : ₹${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}`,
-    '========================================',
-  ];
-
-  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Invoice_${order.transaction_id || "order"}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
 };
 
 export default function History() {
@@ -182,7 +181,14 @@ export default function History() {
           try {
             const dateStr = order.created_at || order.created_date;
             if (dateStr) {
-               dateDisplay = format(new Date(dateStr), 'dd MMM yyyy, hh:mm a');
+               dateDisplay = new Date(dateStr).toLocaleString("en-IN", {
+                 timeZone: "Asia/Kolkata",
+                 day: "2-digit",
+                 month: "short",
+                 year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              });
             }
           } catch (e) {}
 
@@ -284,7 +290,14 @@ export default function History() {
                       <span className="text-gray-500">Date & Time</span>
                       <span className="text-white">
                         {order?.created_at
-                          ? format(new Date(order.created_at), 'dd MMM yyyy, hh:mm a')
+                          ? new Date(order.created_at).toLocaleString("en-IN", {
+                               timeZone: "Asia/Kolkata",
+                               day: "2-digit",
+                               month: "short",
+                               year: "numeric",
+                               hour: "2-digit", 
+                               minute: "2-digit"
+                              })
                           : '—'}
                       </span>
                     </div>

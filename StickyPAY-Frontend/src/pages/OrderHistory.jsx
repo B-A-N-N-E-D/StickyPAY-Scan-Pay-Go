@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Receipt, ChevronDown, ChevronUp, CreditCard, Wallet, Smartphone, Store, CheckCircle2, Package, Download } from 'lucide-react';
 import { getOrders } from '../components/localData';
-import { format } from 'date-fns';
+
 import { Button } from '@/components/ui/button';
 
 const paymentIcon = (method) => {

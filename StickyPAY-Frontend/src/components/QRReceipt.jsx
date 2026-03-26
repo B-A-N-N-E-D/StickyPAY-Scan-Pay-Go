@@ -11,7 +11,6 @@ import {
   Home,
   Clock
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from "../lib/utils";
 import { supabase } from "../lib/supabase";
@@ -34,7 +33,7 @@ const paymentIcon = (method) => {
 export default function QRReceipt({ order: initialOrder }) {
   const navigate = useNavigate();
   const [order, setOrder] = useState(initialOrder);
-  
+
   console.log("🔥 QR ORDER DATA:", order);
 
   // ✅ REALTIME UPDATE
@@ -168,7 +167,14 @@ export default function QRReceipt({ order: initialOrder }) {
           <span className="text-gray-500">Date & Time</span>
           <span className="text-white">
             {order?.created_at
-              ? new Date(order.created_at).toLocaleString()
+              ? new Date(order.created_at).toLocaleString("en-IN", {
+                  timeZone: "Asia/Kolkata",
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
               : '—'}
           </span>
         </div>
