@@ -110,6 +110,11 @@ export default function Cart() {
 
   const handlePayment = async (method) => {
     if (processing) return;
+
+    console.log("🔥 PAYMENT CLICKED:", method);
+
+    const finalPaymentMethod = method; // ✅ FIX (no state issue)
+
     setProcessing(true);
 
     if (redeemCoins && coinDiscount > 0) redeemTokensFn(coinDiscount);
@@ -127,15 +132,21 @@ export default function Cart() {
           return;
         }
 
-        console.log("SENDING TO BACKEND:", { user_id: user.id, store_id: storeId, items: updatedItems });
+        console.log("🚀 SENDING TO BACKEND:", {
+          user_id: user.id,
+          store_id: storeId,
+          payment_method: finalPaymentMethod,
+          items: updatedItems
+        });
 
+        // ✅ CHECKOUT API
         const checkoutRes = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: user.id,
             store_id: storeId,
-            // ✅ FIX BUG 1: always use product_id field, fallback to id
+            payment_method: finalPaymentMethod, // ✅ FIX
             items: updatedItems.map(item => ({
               product_id: item.product_id || item.id,
               quantity: item.quantity,
@@ -153,9 +164,9 @@ export default function Cart() {
         }
 
         const checkoutData = await checkoutRes.json();
-        const backendOrder = checkoutData.order; // ✅ the real order from DB
+        const backendOrder = checkoutData.order;
 
-        // Confirm payment
+        // ✅ CONFIRM PAYMENT
         await fetch(`${import.meta.env.VITE_API_URL}/api/payments/confirm`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -165,16 +176,16 @@ export default function Cart() {
             store_id: storeId,
             items,
             amount: finalAmount,
-            payment_method: selectedPaymentMethod
+            payment_method: finalPaymentMethod // ✅ FIX
           })
         });
 
-        // ✅ FIX BUG 2: use backendOrder (has transaction_id) for QR receipt
-        // Merge with local data for display (store_name, payment_method etc.)
+        // ✅ DISPLAY ORDER
         const displayOrder = {
           ...backendOrder,
+          created_at: backendOrder.created_at || new Date().toISOString(),
           store_name: activeStore?.name || backendOrder.store_name || 'Store',
-          payment_method: method,
+          payment_method: finalPaymentMethod, // ✅ FIX
           items: updatedItems.map(item => ({
             product_id: item.product_id || item.id,
             name: item.name,
@@ -183,17 +194,22 @@ export default function Cart() {
           })),
         };
 
-        // Ensure this is properly displayed in `Home.jsx` recent orders and offline lists
+        // Save locally
         const localCached = JSON.parse(localStorage.getItem('sp_orders') || '[]');
-        localCached.unshift({ ...displayOrder, id: displayOrder.order_id, qr_code_data: backendOrder.transaction_id, status: 'paid', created_date: new Date().toISOString() });
+        localCached.unshift({
+          ...displayOrder,
+          id: displayOrder.order_id,
+          qr_code_data: backendOrder.transaction_id,
+          status: 'paid',
+          created_date: new Date().toISOString()
+        });
         localStorage.setItem('sp_orders', JSON.stringify(localCached));
 
-        // clear items state so cart shows empty
         clearCart();
         clearStore();
         setItems([]);
 
-        const { earned } = awardTokens(backendOrder.order_id, finalAmount);
+        awardTokens(backendOrder.order_id, finalAmount);
 
         setOrder(displayOrder);
         setShowReceipt(true);
@@ -202,15 +218,15 @@ export default function Cart() {
         return;
       }
     } catch (err) {
-      console.error("Order API failed", err);
+      console.error("❌ Order API failed", err);
       alert('Unable to connect to server. Please try again.');
       setProcessing(false);
       return;
     }
 
-    // Fallback for non-logged-in users (offline mode)
+    // Offline fallback
     const newOrder = saveOrder({
-      store_id: activeStore?.id || 'unknown',
+      store_id: activeStore?.store_id || 'unknown',
       store_name: activeStore?.name || 'Store',
       items: items.map(item => ({
         product_id: item.product_id || item.id,
@@ -219,14 +235,15 @@ export default function Cart() {
         quantity: item.quantity,
       })),
       total_amount: finalAmount,
-      payment_method: method,
+      payment_method: finalPaymentMethod, // ✅ FIX
     });
 
     clearCart();
     clearStore();
     setItems([]);
-    const { earned } = awardTokens(newOrder.id, finalAmount);
-    newOrder._tokensEarned = earned;
+
+    awardTokens(newOrder.id, finalAmount);
+
     setOrder(newOrder);
     setShowReceipt(true);
     setShowPaymentSheet(false);

@@ -3,7 +3,10 @@ import { supabase } from "../config/supabase.js";
 
 const router = express.Router();
 
-// GET all orders for a user
+
+// ==========================
+// GET ALL ORDERS
+// ==========================
 router.get("/:user_id", async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -18,6 +21,7 @@ router.get("/:user_id", async (req, res) => {
         created_at,
         store_name,
         transaction_id,
+        payment_method,
         verified,
         payment:payments (
           payment_method,
@@ -39,16 +43,26 @@ router.get("/:user_id", async (req, res) => {
         details: error.details,
         hint: error.hint
       });
-}
+    }
 
-    res.json({ orders });
+    // ✅ ENSURE created_at always exists
+    const safeOrders = (orders || []).map(order => ({
+      ...order,
+      created_at: order.created_at || new Date().toISOString()
+    }));
+
+    res.json({ orders: safeOrders });
+
   } catch (err) {
     console.error("Orders fetch error:", err);
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 });
 
-// POST /checkout
+
+// ==========================
+// CHECKOUT
+// ==========================
 router.post("/checkout", async (req, res) => {
   try {
     const { user_id, store_id, items, payment_method = "UPI" } = req.body;
@@ -61,11 +75,12 @@ router.post("/checkout", async (req, res) => {
       return res.status(400).json({ message: "No items in cart" });
     }
 
-    // Calculate total
     let totalAmount = 0;
+
     const orderItemsToInsert = items.map((item) => {
       const itemTotal = item.price * item.quantity;
       totalAmount += itemTotal;
+
       return {
         product_id: item.product_id,
         quantity: item.quantity,
@@ -73,13 +88,19 @@ router.post("/checkout", async (req, res) => {
       };
     });
 
-    // Generate transaction ID — same value stored in both qr_code and transaction_id
     const transaction_id = `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const qrCode = transaction_id;
 
-    console.log("🔥 INSERTING ORDER:", { user_id, store_id, totalAmount, qrCode, transaction_id });
+    console.log("🔥 INSERTING ORDER:", {
+      user_id,
+      store_id,
+      totalAmount,
+      payment_method
+    });
 
-    // 1. Create order
+    // ==========================
+    // CREATE ORDER
+    // ==========================
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert([
@@ -90,76 +111,58 @@ router.post("/checkout", async (req, res) => {
           payment_status: "paid",
           payment_method,
           qr_code: qrCode,
-          transaction_id: transaction_id,
+          transaction_id,
           verified: false,
           store_name: "Store",
+          created_at: new Date().toISOString() // ✅ FORCE DATE
         },
       ])
       .select()
       .single();
 
     if (orderError) {
-      console.error("❌ SUPABASE INSERT ERROR:", JSON.stringify(orderError));
+      console.error("❌ INSERT ERROR:", orderError);
       return res.status(500).json({
         error: "Insert failed",
-        detail: orderError.message,
-        hint: orderError.hint,
-        code: orderError.code,
+        detail: orderError.message
       });
     }
 
     if (!order) {
-      console.error("❌ ORDER IS NULL after insert");
       return res.status(500).json({
-        error: "Insert failed",
-        detail: "order is not defined — Supabase returned no data",
+        error: "Order creation failed"
       });
     }
 
-    // 2. Insert order items
-    // ✅ FIX: validate product_ids exist first to avoid FK violation
+    // ==========================
+    // INSERT ITEMS
+    // ==========================
     const validItems = orderItemsToInsert.map(item => ({
       ...item,
       order_id: order.order_id
     }));
 
     if (validItems.length > 0) {
-      const { error: insertOrderItemsError } = await supabase
+      const { error } = await supabase
         .from("order_items")
         .insert(validItems);
 
-      if (insertOrderItemsError) {
-        // Don't fail the whole checkout — order was already created
-        console.error("❌ ORDER ITEMS INSERT ERROR:", insertOrderItemsError);
+      if (error) {
+        console.error("❌ ITEMS INSERT ERROR:", error);
       }
     }
 
-    // 3. Deduct inventory
-    for (const item of items) {
-      try {
-        const { data: stockRow } = await supabase
-          .from("store_products")
-          .select("stock")
-          .eq("store_id", store_id)
-          .eq("product_id", item.product_id)
-          .single();
+    // ==========================
+    // RETURN SAFE ORDER
+    // ==========================
+    const safeOrder = {
+      ...order,
+      created_at: order.created_at || new Date().toISOString()
+    };
 
-        if (stockRow && stockRow.stock >= item.quantity) {
-          await supabase
-            .from("store_products")
-            .update({ stock: stockRow.stock - item.quantity })
-            .eq("store_id", store_id)
-            .eq("product_id", item.product_id);
-        }
-      } catch (_) {
-        // ignore stock errors
-      }
-    }
-
-    // ✅ Return full order with transaction_id so frontend can render QR
     res.json({
       message: "Order created",
-      order: order,
+      order: safeOrder,
       qr_code: qrCode,
     });
 

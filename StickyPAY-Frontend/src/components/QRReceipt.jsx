@@ -34,6 +34,8 @@ const paymentIcon = (method) => {
 export default function QRReceipt({ order: initialOrder }) {
   const navigate = useNavigate();
   const [order, setOrder] = useState(initialOrder);
+  
+  console.log("🔥 QR ORDER DATA:", order);
 
   // ✅ REALTIME UPDATE
   useEffect(() => {
@@ -166,7 +168,7 @@ export default function QRReceipt({ order: initialOrder }) {
           <span className="text-gray-500">Date & Time</span>
           <span className="text-white">
             {order?.created_at
-              ? format(new Date(order.created_at), 'dd MMM yyyy, hh:mm a')
+              ? new Date(order.created_at).toLocaleString()
               : '—'}
           </span>
         </div>
@@ -177,7 +179,7 @@ export default function QRReceipt({ order: initialOrder }) {
         <div className="bg-gray-800/60 rounded-xl p-3 mt-3 space-y-2 text-sm">
           <p className="text-gray-400 font-semibold">Items</p>
 
-          {order.order_items.map((item, i) => {
+          {order?.order_items?.map((item, i) => {
             const qty = item.quantity || 1;
             const price = item.price || 0;
 

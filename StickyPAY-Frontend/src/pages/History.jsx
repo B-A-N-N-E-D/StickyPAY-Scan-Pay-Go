@@ -38,7 +38,7 @@ const downloadInvoice = (order) => {
   const items = order.items || [];
 
   const itemLines = items.length > 0
-    ? items.map((item, i) =>
+    ? order.items.map((item, i) =>
         `${i + 1}. ${item.name} x${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`
       )
     : ['No items found'];
@@ -47,7 +47,7 @@ const downloadInvoice = (order) => {
   try {
     const dateStr = order.created_at || order.created_date;
     if (dateStr) {
-      formattedDate = format(new Date(dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : `${dateStr}Z`), 'dd MMM yyyy, hh:mm a');
+      formattedDate = format(new Date(dateStr), 'dd MMM yyyy, hh:mm a');
     }
   } catch (e) {
     console.error("Date format error", e);
@@ -60,12 +60,12 @@ const downloadInvoice = (order) => {
     `Transaction ID : ${order.transaction_id || order.qr_code_data || 'N/A'}`,
     `Date & Time    : ${formattedDate}`,
     `Store          : ${order.store_name || '—'}`,
-    `Payment Mode   : ${order.payment?.payment_method || '—'}`,
+    `Payment Mode   : ${order.payment_method ? order.payment_method.toUpperCase() : 'N/A'}`
     `Status         : ${order.verified || order.status === 'verified' ? 'Verified' : 'Pending'}`,
     '----------------------------------------',
     'ITEMS',
     '----------------------------------------',
-    ...items.map(item => {
+    ...order.items.map(item => {
       const name = (item.name || 'Item').substring(0, 18).padEnd(20);
       const qty = item.quantity || 1;
       const price = item.price || 0;
@@ -182,7 +182,7 @@ export default function History() {
           try {
             const dateStr = order.created_at || order.created_date;
             if (dateStr) {
-               dateDisplay = format(new Date(dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : `${dateStr}Z`), 'dd MMM yyyy, hh:mm a');
+               dateDisplay = format(new Date(dateStr), 'dd MMM yyyy, hh:mm a');
             }
           } catch (e) {}
 
@@ -246,7 +246,9 @@ export default function History() {
                   </div>
 
                   {/* META */}
+                  {/* 🔥 FULL DETAILS (UPGRADED) */}
                   <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
+
                     <div className="flex justify-between">
                       <span className="text-gray-500">Transaction ID</span>
                       <span className="text-white font-mono text-xs">
@@ -256,13 +258,34 @@ export default function History() {
 
                     <div className="flex justify-between">
                       <span className="text-gray-500">Payment</span>
-                      <span className="flex items-center gap-1 text-white">
-                        <div className="flex items-center gap-2">
-                          {paymentIcon(order.payment_method)}
-                          <span className="capitalize">
-                            {order.payment_method || "upi"}
-                          </span>
-                        </div>
+                      <span className="flex items-center gap-2 text-white capitalize">
+                        {paymentIcon(order.payment_method)}
+                        {order.payment_method || "upi"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Store</span>
+                      <span className="text-white">
+                        {order?.store_name || "Store"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Status</span>
+                      <span className={`font-semibold ${
+                        order?.verified ? "text-blue-400" : "text-orange-400"
+                      }`}>
+                        {order?.verified ? "Verified" : "Pending"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Date & Time</span>
+                      <span className="text-white">
+                        {order?.created_at
+                          ? format(new Date(order.created_at), 'dd MMM yyyy, hh:mm a')
+                          : '—'}
                       </span>
                     </div>
                   </div>
@@ -272,7 +295,7 @@ export default function History() {
                     <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
                       <p className="text-gray-400 font-semibold mb-1">Items</p>
 
-                      {items.map((item, index) => {
+                      {order.items.map((item, index) => {
                         const qty = item.quantity || item.qty || 1;
                         const price = item.price || 0;
 
