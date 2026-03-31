@@ -39,6 +39,10 @@ export default function Cart() {
       setCartData(data);
       setItems(data.items);
     }
+    const storedTokens = getTokens();
+    if (storedTokens) {
+      setUserTokens(storedTokens);
+    }
   }, []);
 
   const updateItems = (updated) => {
