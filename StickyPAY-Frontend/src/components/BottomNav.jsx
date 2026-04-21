@@ -24,18 +24,20 @@ export default function BottomNav({ cartCount = 0 }) {
     return (
       <Link
         to={createPageUrl(item.page)}
-        className={`flex flex-col items-center p-2 rounded-xl transition-all duration-300 relative group ${
-          isActive
-            ? 'text-yellow-400'
-            : 'text-gray-500 hover:text-white'
-        }`}
+        className={`flex flex-col items-center p-2 rounded-xl transition-all duration-300 relative group`}
+        style={{ color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon)' }}
       >
         <div
           className={`relative p-2 rounded-xl transition-all duration-300 ${
             isActive
-              ? 'bg-yellow-400/20'
-              : 'group-hover:bg-gray-800 group-hover:scale-110'
+              ? 'shadow-[0_0_15px_rgba(250,204,21,0.35)]'
+              : 'group-hover:scale-110'
           }`}
+          style={{
+            background: isActive
+              ? 'rgba(250, 204, 21, 0.18)'
+              : 'transparent',
+          }}
         >
           <Icon
             className={`w-5 h-5 transition-all duration-300 ${
@@ -44,7 +46,7 @@ export default function BottomNav({ cartCount = 0 }) {
           />
 
           {item.name === 'Cart' && cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-black text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#22c55e] text-black text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
               {cartCount}
             </span>
           )}
@@ -54,12 +56,13 @@ export default function BottomNav({ cartCount = 0 }) {
           className={`text-xs mt-1 transition-all duration-300 ${
             isActive ? 'font-semibold' : 'group-hover:font-medium'
           }`}
+          style={{ color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon)' }}
         >
           {item.name}
         </span>
 
         {isActive && (
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-yellow-400 rounded-full" />
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-yellow-400 rounded-full blur-sm" />
         )}
       </Link>
     );
@@ -68,8 +71,10 @@ export default function BottomNav({ cartCount = 0 }) {
   const isScannerActive = currentPath.toLowerCase() === 'scanner';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 px-4 py-2 z-40">
-      <div className="flex justify-between items-end max-w-md mx-auto relative">
+    <nav className="fixed bottom-4 left-4 right-4 z-50">
+      <div
+        className="flex justify-between items-end max-w-md mx-auto relative glass-nav-bottom px-6 py-3"
+      >
 
         {/* Left Items */}
         <div className="flex gap-4">
@@ -84,9 +89,9 @@ export default function BottomNav({ cartCount = 0 }) {
           className="absolute left-1/2 -translate-x-1/2 -top-6 group"
         >
           <div
-            className={`relative p-4 rounded-2xl transition-all duration-300 shadow-lg ${
+            className={`relative p-4 rounded-2xl transition-all duration-300 shadow-xl backdrop-blur-md ${
               isScannerActive
-                ? 'bg-gradient-to-br from-yellow-400 to-green-500 shadow-yellow-400/30'
+                ? 'bg-gradient-to-br from-yellow-400 to-green-500 shadow-[0_0_25px_rgba(250,204,21,0.5)]'
                 : 'bg-gradient-to-br from-yellow-400 to-green-500 group-hover:scale-110 group-hover:-translate-y-1 group-hover:shadow-yellow-400/50'
             }`}
           >
@@ -102,10 +107,11 @@ export default function BottomNav({ cartCount = 0 }) {
 
           <span
             className={`block text-center text-xs mt-2 transition-all duration-300 ${
-              isScannerActive
-                ? 'text-yellow-400 font-semibold'
-                : 'text-gray-500 group-hover:text-white group-hover:font-medium'
+              isScannerActive ? 'font-semibold' : 'group-hover:font-medium'
             }`}
+            style={{
+              color: isScannerActive ? 'var(--nav-icon-active)' : 'var(--nav-icon)',
+            }}
           >
             Scan
           </span>

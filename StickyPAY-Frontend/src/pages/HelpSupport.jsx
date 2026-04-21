@@ -61,7 +61,7 @@ export default function HelpSupport() {
         </div>
         <div className="space-y-2">
           {faqs.map((faq, idx) => (
-            <div key={idx} className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+            <div key={idx} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-md overflow-hidden">
               <button
                 className="w-full p-4 text-left flex items-center justify-between"
                 onClick={() => setExpanded(expanded === idx ? null : idx)}
@@ -88,11 +88,11 @@ export default function HelpSupport() {
             placeholder="Describe your issue or suggestion..."
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
-            className="w-full bg-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 border border-gray-700 outline-none resize-none text-sm"
+            className="w-full bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 text-white placeholder-gray-500 border border-gray-700 outline-none resize-none text-sm"
           />
           <button
             onClick={handleSend}
-            className={`mt-3 w-full py-3 rounded-xl font-semibold text-sm transition-all ${sent ? 'bg-green-500 text-black' : 'bg-yellow-400 text-black hover:bg-yellow-500'
+            className={`mt-3 w-full py-3 rounded-xl font-semibold text-sm transition-all ${sent ? 'bg-[#22c55e] text-black' : 'bg-yellow-400 text-black hover:bg-yellow-500'
               }`}
           >
             {sent ? '✓ Feedback Sent!' : 'Send Feedback'}

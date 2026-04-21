@@ -44,14 +44,14 @@ function PinPad({ title, subtitle, onSuccess, onCancel, isSetup = false }) {
   const label = step === 'set' ? 'Create 4-digit PIN' : step === 'confirm' ? 'Confirm PIN' : 'Enter PIN';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-gray-900 rounded-3xl p-6 w-80 border border-gray-700">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h3 className="font-bold text-white">{title || label}</h3>
             {subtitle && <p className="text-gray-400 text-xs mt-0.5">{subtitle}</p>}
           </div>
-          <button onClick={onCancel} className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
+          <button onClick={onCancel} className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
             ✕
           </button>
         </div>
@@ -65,7 +65,7 @@ function PinPad({ title, subtitle, onSuccess, onCancel, isSetup = false }) {
         <div className="grid grid-cols-3 gap-3">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((d, i) => (
             <button key={i} onClick={() => d === '⌫' ? del() : d !== '' && handleDigit(String(d))}
-              className={`h-14 rounded-2xl font-bold text-lg ${d === '' ? '' : 'bg-gray-800 text-white active:bg-gray-700'}`}>
+              className={`h-14 rounded-2xl font-bold text-lg ${d === '' ? '' : 'bg-white/10 backdrop-blur-md text-white active:bg-gray-700'}`}>
               {d}
             </button>
           ))}
@@ -85,6 +85,11 @@ export default function WalletPage() {
   const [action, setAction] = useState(null); // 'view' | 'add'
   const hasPin = !!getPin();
 
+  useEffect(() => {
+    document.body.classList.add("hide-bottom-nav");
+    return () => document.body.classList.remove("hide-bottom-nav");
+  }, []);
+  
   useEffect(() => {
     setWallet(getWallet());
   }, []);
@@ -180,7 +185,7 @@ export default function WalletPage() {
           <div className="w-full bg-gray-900 rounded-t-3xl p-6 border-t border-gray-800">
             <div className="flex justify-between items-center mb-5">
               <h3 className="text-lg font-bold">Add Money to Wallet</h3>
-              <button onClick={() => setShowAdd(false)} className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400">✕</button>
+              <button onClick={() => setShowAdd(false)} className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-gray-400">✕</button>
             </div>
             <div className="grid grid-cols-4 gap-2 mb-4">
               {QUICK_AMOUNTS.map(a => (
@@ -195,9 +200,9 @@ export default function WalletPage() {
               value={addAmount}
               onChange={e => setAddAmount(e.target.value)}
               placeholder="Enter custom amount"
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none mb-4"
+              className="w-full bg-white/10 backdrop-blur-md border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none mb-4"
             />
-            <Button onClick={confirmAdd} className="w-full bg-green-500 text-black font-semibold py-5 rounded-xl">
+            <Button onClick={confirmAdd} className="w-full bg-[#22c55e] text-black font-semibold py-5 rounded-xl">
               Add ₹{addAmount || '0'} to Wallet
             </Button>
           </div>
@@ -217,7 +222,7 @@ export default function WalletPage() {
             {wallet.transactions?.map(tx => (
               <div key={tx.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'credit' ? 'bg-[#22c55e]/20' : 'bg-red-500/20'}`}>
                     {tx.type === 'credit' ? <ArrowDownLeft className="w-5 h-5 text-green-400" /> : <ArrowUpRight className="w-5 h-5 text-red-400" />}
                   </div>
                   <div>

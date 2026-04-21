@@ -270,7 +270,7 @@ export default function Cart() {
           <h1 className="text-2xl font-bold">Cart</h1>
         </div>
         <div className="flex flex-col items-center justify-center px-6 py-20">
-          <div className="w-24 h-24 bg-gray-900 rounded-full flex items-center justify-center mb-6">
+          <div className="w-24 h-24 bg-white/5 backdrop-blur-xl rounded-full border border-white/10 flex items-center justify-center mb-6">
             <ShoppingCart className="w-12 h-12 text-gray-600" />
           </div>
           <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
@@ -294,7 +294,7 @@ export default function Cart() {
       {/* Items */}
       <div className="px-5 space-y-3">
         {items.map((item) => (
-          <div key={item.id} className="bg-[#0f1117] rounded-2xl p-4 border border-gray-800/70">
+          <div key={item.id} className="bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/10 shadow-md">
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-sm text-white">{item.name}</h3>
@@ -311,7 +311,7 @@ export default function Cart() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                <div className="flex items-center gap-1 bg-gray-800 rounded-xl p-1">
+                <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md rounded-xl p-1">
                   <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
                     <Minus className="w-3.5 h-3.5" />
                   </button>
@@ -336,7 +336,7 @@ export default function Cart() {
       <div className="px-5 mt-4">
         <button
           onClick={() => setShowCoupons(!showCoupons)}
-          className="w-full flex items-center justify-between bg-[#0f1117] border border-gray-800/70 rounded-xl px-4 py-3.5"
+          className="w-full flex items-center justify-between bg-white/5 backdrop-blur-xl border border-gray-800/70 rounded-xl px-4 py-3.5"
         >
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-yellow-400" />
@@ -348,13 +348,13 @@ export default function Cart() {
         </button>
 
         {showCoupons && (
-          <div className="bg-[#0f1117] border border-gray-800/70 border-t-0 rounded-b-xl px-4 pb-4">
+          <div className="bg-white/5 backdrop-blur-xl border border-gray-800/70 border-t-0 rounded-b-xl px-4 pb-4">
             <div className="flex gap-2 pt-3 mb-3">
               <input
                 value={couponInput}
                 onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
                 placeholder="Enter code"
-                className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 outline-none"
+                className="flex-1 bg-white/10 backdrop-blur-md border border-gray-700 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 outline-none"
               />
               <button onClick={() => applyCoupon()} className="bg-yellow-400 text-black font-semibold px-4 rounded-xl text-sm">
                 Apply
@@ -365,7 +365,7 @@ export default function Cart() {
             <div className="space-y-2">
               {COUPONS.map(c => (
                 <button key={c.code} onClick={() => applyCoupon(c.code)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-left ${appliedCoupon?.code === c.code ? 'border-yellow-400 bg-yellow-400/10' : 'border-gray-700 bg-gray-800'}`}>
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-left ${appliedCoupon?.code === c.code ? 'border-yellow-400 bg-yellow-400/10' : 'border-gray-700 bg-white/10 backdrop-blur-md'}`}>
                   <div>
                     <span className="font-mono font-bold text-yellow-400 text-xs tracking-widest">{c.code}</span>
                     <p className="text-gray-400 text-xs mt-0.5">{c.desc}</p>
@@ -380,7 +380,7 @@ export default function Cart() {
 
       {/* Bill Summary */}
       <div className="px-5 mt-4">
-        <div className="bg-[#0f1117] rounded-2xl border border-gray-800/70 p-4 space-y-2 text-sm">
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-gray-800/70 p-4 space-y-2 text-sm">
           <div className="flex justify-between text-gray-400">
             <span>Subtotal</span>
             <span className="text-white">₹{totalAmount.toFixed(2)}</span>
@@ -409,7 +409,7 @@ export default function Cart() {
         <div className="px-5 mt-3">
           <button
             onClick={() => setRedeemCoins(!redeemCoins)}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-colors ${redeemCoins ? 'border-yellow-400 bg-yellow-400/10' : 'border-gray-700 bg-[#0f1117]'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-colors ${redeemCoins ? 'border-yellow-400 bg-yellow-400/10' : 'border-gray-700 bg-white/5 backdrop-blur-xl'}`}
           >
             <span className="text-2xl">🪙</span>
             <div className="text-left flex-1">
@@ -427,7 +427,7 @@ export default function Cart() {
       <div className="px-5 mt-5 mb-32">
         <Button
           onClick={() => setShowPaymentSheet(true)}
-          className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-6 rounded-2xl text-base"
+          className="w-full bg-gradient-to-r from-yellow-400 to-green-500 shadow-[0_0_25px_rgba(250,204,21,0.4)]"
         >
           Proceed to Pay · ₹{Math.max(0, applyDiscount(totalAmount) - coinDiscount).toFixed(2)}
         </Button>

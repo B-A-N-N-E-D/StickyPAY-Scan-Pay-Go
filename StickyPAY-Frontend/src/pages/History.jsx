@@ -176,7 +176,7 @@ export default function History() {
 
       <div className="px-6 space-y-3 pb-6">
         {orders.length === 0 && (
-          <div className="bg-gray-900 rounded-2xl p-12 border border-gray-800 text-center">
+          <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-12 border border-white/10">
             <Receipt className="w-12 h-12 text-gray-600 mx-auto mb-3" />
             <p className="text-gray-400 font-medium">No purchase history</p>
           </div>
@@ -202,7 +202,7 @@ export default function History() {
           } catch (e) {}
 
           return (
-            <div key={order.order_id || Math.random()} className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+            <div key={order.order_id || Math.random()} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-md overflow-hidden">
 
               {/* HEADER */}
               <button
@@ -211,11 +211,11 @@ export default function History() {
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
-                    status === 'verified' ? 'bg-blue-500/20' : 'bg-green-500/20'
+                    status === 'verified' ? 'bg-blue-500/20' : 'bg-[#22c55e]/20'
                   }`}>
                     {status === 'verified'
                       ? <ShieldCheck className="w-5 h-5 text-blue-400" />
-                      : <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                      : <CheckCircle2 className="w-5 h-5 text-[#22c55e]" />}
                   </div>
 
                   <div>
@@ -245,7 +245,7 @@ export default function History() {
 
                   {/* QR */}
                   <div
-                    className="flex items-center gap-4 bg-gray-800 rounded-xl p-3 border cursor-pointer"
+                    className="flex items-center gap-4 bg-white/10 backdrop-blur-md rounded-xl p-3 border cursor-pointer"
                     onClick={() => setEnlargedQr(order)}
                   >
                     <div className="bg-white p-2 rounded-xl border-4 border-orange-500 shadow-[0_0_15px_rgba(255,115,0,0.6)]">
@@ -262,7 +262,7 @@ export default function History() {
 
                   {/* META */}
                   {/* 🔥 FULL DETAILS (UPGRADED) */}
-                  <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
+                  <div className="bg-white/10 backdrop-blur-md/60 rounded-xl p-3 space-y-2 text-sm">
 
                     <div className="flex justify-between">
                       <span className="text-gray-500">Transaction ID</span>
@@ -314,7 +314,7 @@ export default function History() {
 
                   {/* ✅ ITEMS LIST */}
                   {items.length > 0 && (
-                    <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
+                    <div className="bg-white/10 backdrop-blur-md/60 rounded-xl p-3 space-y-2 text-sm">
                       <p className="text-gray-400 font-semibold mb-1">Items</p>
 
                       {order.items.map((item, index) => {
@@ -345,7 +345,7 @@ export default function History() {
 
                   <Button 
                     onClick={() => downloadInvoice(order)}
-                    className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 py-3 rounded-xl flex items-center justify-center gap-2"
+                    className="w-full bg-white/10 backdrop-blur-md hover:bg-gray-700 text-white border border-gray-700 py-3 rounded-xl flex items-center justify-center gap-2"
                     variant="outline"
                   >
                     <Download className="w-4 h-4 text-yellow-400" />
@@ -361,7 +361,7 @@ export default function History() {
       {/* QR MODAL */}
       {enlargedQr && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6">
-          <div className="bg-[#0f172a] p-8 rounded-3xl text-center relative border border-gray-800">
+          <div className="bg-white/5 backdrop-blur-xl p-8 rounded-3xl text-center relative border border-gray-800">
 
             <button onClick={() => setEnlargedQr(null)} className="absolute top-4 right-4 text-gray-400">
               <X />

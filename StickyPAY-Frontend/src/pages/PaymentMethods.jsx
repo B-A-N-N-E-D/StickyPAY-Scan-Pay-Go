@@ -42,6 +42,7 @@ export default function PaymentMethods() {
     const method = {
       id: Date.now().toString(),
       ...newMethod,
+      type: newMethod.type || 'card',
       isDefault: methods.length === 0,
     };
     save([...methods, method]);
@@ -49,7 +50,11 @@ export default function PaymentMethods() {
     setNewMethod({ type: 'card', name: '', last4: '', upiId: '' });
   };
 
-  const Icon = (type) => type === 'upi' ? Smartphone : CreditCard;
+  const Icon = (type) => {
+    if (type === 'upi') return Smartphone;
+    if (type === 'virtual') return CreditCard;
+    return CreditCard;
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -101,15 +106,19 @@ export default function PaymentMethods() {
             <div key={m.id} className={`bg-gray-900 rounded-2xl p-4 border ${m.isDefault ? 'border-yellow-400/50' : 'border-gray-800'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center">
                     <Ic className="w-6 h-6 text-yellow-400" />
                   </div>
                   <div>
-                    <p className="font-semibold">{m.name}</p>
+                    <p className="font-semibold">
+                      {m.type === 'virtual' ? '💳 Virtual Card' : m.name}
+                    </p>
                     <p className="text-gray-400 text-sm">
                       {m.type === 'upi'
                         ? (unlocked ? m.upiId : '•••• @••••')
-                        : (unlocked ? (m.last4 ? `•••• •••• •••• ${m.last4}` : m.type) : '•••• •••• •••• ••••')}
+                        : m.type === 'virtual'
+                          ? (unlocked ? `Virtual Card •••• ${m.last4}` : '•••• •••• •••• ••••')
+                          : (unlocked ? (m.last4 ? `•••• •••• •••• ${m.last4}` : m.type) : '•••• •••• •••• ••••')}
                     </p>
                   </div>
                 </div>
@@ -163,14 +172,14 @@ export default function PaymentMethods() {
               placeholder={newMethod.type === 'card' ? 'Card name (e.g. HDFC Credit)' : 'UPI App name'}
               value={newMethod.name}
               onChange={e => setNewMethod(p => ({ ...p, name: e.target.value }))}
-              className="w-full bg-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 border border-gray-700 outline-none"
+              className="w-full bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 text-white placeholder-gray-500 border border-gray-700 outline-none"
             />
             {newMethod.type === 'card' ? (
               <input
                 placeholder="Last 4 digits"
                 value={newMethod.last4}
                 onChange={e => setNewMethod(p => ({ ...p, last4: e.target.value.slice(0, 4) }))}
-                className="w-full bg-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 border border-gray-700 outline-none"
+                className="w-full bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 text-white placeholder-gray-500 border border-gray-700 outline-none"
                 maxLength={4}
               />
             ) : (
@@ -178,7 +187,7 @@ export default function PaymentMethods() {
                 placeholder="UPI ID (e.g. name@upi)"
                 value={newMethod.upiId}
                 onChange={e => setNewMethod(p => ({ ...p, upiId: e.target.value }))}
-                className="w-full bg-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 border border-gray-700 outline-none"
+                className="w-full bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 text-white placeholder-gray-500 border border-gray-700 outline-none"
               />
             )}
             <div className="flex gap-3">

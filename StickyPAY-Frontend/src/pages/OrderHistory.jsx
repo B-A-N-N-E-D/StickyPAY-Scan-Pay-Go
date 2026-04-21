@@ -71,7 +71,7 @@ export default function OrderHistory() {
         )}
 
         {orders.map((order) => (
-          <div key={order.id} className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div key={order.id} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-md overflow-hidden">
             <button
               className="w-full p-4 text-left flex items-center justify-between"
               onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
@@ -95,7 +95,7 @@ export default function OrderHistory() {
 
             {expandedOrder === order.id && (
               <div className="border-t border-gray-800 px-4 pt-4 pb-4 space-y-4">
-                <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
+                <div className="bg-white/10 backdrop-blur-md/60 rounded-xl p-3 space-y-2 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500">Transaction ID</span>
                     <span className="text-white font-mono text-xs truncate max-w-[160px]">{order.qr_code_data || order.id}</span>
@@ -124,7 +124,7 @@ export default function OrderHistory() {
                     </div>
                     <div className="space-y-2">
                       {items.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center bg-gray-800 rounded-xl px-3 py-2.5 text-sm">
+                        <div key={idx} className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl px-3 py-2.5 text-sm">
                           <div>
                             <p className="font-medium text-white">{item.name}</p>
                             <p className="text-gray-500 text-xs">₹{item.price?.toFixed(2)} × {item.quantity}</p>
@@ -143,7 +143,7 @@ export default function OrderHistory() {
 
                 <Button
                   onClick={() => downloadInvoice(order)}
-                  className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 py-3 rounded-xl flex items-center justify-center gap-2"
+                  className="w-full bg-white/10 backdrop-blur-md hover:bg-gray-700 text-white border border-gray-700 py-3 rounded-xl flex items-center justify-center gap-2"
                   variant="outline"
                 >
                   <Download className="w-4 h-4 text-yellow-400" />

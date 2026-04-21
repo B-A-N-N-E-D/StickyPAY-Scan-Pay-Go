@@ -55,7 +55,7 @@ export default function Notifications() {
               }`}
           >
             <div className="flex items-start gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${n.read ? 'bg-gray-800' : 'bg-yellow-400/20'}`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${n.read ? 'bg-white/10 backdrop-blur-md' : 'bg-yellow-400/20'}`}>
                 <Bell className={`w-5 h-5 ${n.read ? 'text-gray-500' : 'text-yellow-400'}`} />
               </div>
               <div className="flex-1">

@@ -50,7 +50,7 @@ function PinPad({ title, subtitle, onSuccess, onCancel, isSetup = false }) {
                         <h3 className="font-bold text-white">{title || label}</h3>
                         {subtitle && <p className="text-gray-400 text-xs mt-0.5">{subtitle}</p>}
                     </div>
-                    <button onClick={onCancel} className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
+                    <button onClick={onCancel} className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
                         <X className="w-4 h-4 text-gray-400" />
                     </button>
                 </div>
@@ -66,7 +66,7 @@ function PinPad({ title, subtitle, onSuccess, onCancel, isSetup = false }) {
                 <div className="grid grid-cols-3 gap-3">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((d, i) => (
                         <button key={i} onClick={() => d === '⌫' ? del() : d !== '' && handleDigit(String(d))}
-                            className={`h-14 rounded-2xl font-bold text-lg ${d === '' ? '' : 'bg-gray-800 text-white active:bg-gray-700'}`}>
+                            className={`h-14 rounded-2xl font-bold text-lg ${d === '' ? '' : 'bg-white/10 backdrop-blur-md text-white active:bg-gray-700'}`}>
                             {d}
                         </button>
                     ))}
@@ -97,7 +97,7 @@ function WalletPay({ totalAmount, onConfirm, onCancel }) {
 
     return (
         <div className="space-y-4">
-            <div className="bg-gray-800 rounded-2xl p-4 text-center">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center">
                 <p className="text-gray-400 text-sm">Wallet Balance</p>
                 <p className={`text-3xl font-bold mt-1 ${sufficient ? 'text-green-400' : 'text-red-400'}`}>
                     ₹{wallet.balance.toFixed(2)}
@@ -137,7 +137,7 @@ function SavedCardPay({ method, onConfirm, onCancel }) {
 
     return (
         <div className="space-y-4">
-            <div className="bg-gray-800 rounded-2xl p-4 flex items-center gap-3">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
                     <CreditCard className="w-6 h-6 text-blue-400" />
                 </div>
@@ -146,7 +146,7 @@ function SavedCardPay({ method, onConfirm, onCancel }) {
                     <p className="text-gray-400 text-sm">•••• •••• •••• {method.last4}</p>
                 </div>
                 <div className="ml-auto">
-                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">Verified</span>
+                    <span className="text-xs bg-[#22c55e]/20 text-green-400 px-2 py-1 rounded-full">Verified</span>
                 </div>
             </div>
             <Button onClick={() => onConfirm('card')} className="w-full py-5 rounded-xl font-semibold bg-yellow-400 text-black">
@@ -175,16 +175,16 @@ function SavedUpiPay({ method, onConfirm, onCancel }) {
 
     return (
         <div className="space-y-4">
-            <div className="bg-gray-800 rounded-2xl p-4 flex items-center gap-3">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
-                    <Smartphone className="w-6 h-6 text-purple-400" />
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-12 h-12 bg-[#22c55e]/20 rounded-xl flex items-center justify-center">
+                    <Smartphone className="w-6 h-6 text-green-400" />
                 </div>
                 <div>
                     <p className="font-semibold">{method.name}</p>
                     <p className="text-gray-400 text-sm">{method.upiId}</p>
                 </div>
                 <div className="ml-auto">
-                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">Verified</span>
+                    <span className="text-xs bg-[#22c55e]/20 text-green-400 px-2 py-1 rounded-full">Verified</span>
                 </div>
             </div>
             <Button onClick={() => onConfirm('upi')} className="w-full py-5 rounded-xl font-semibold bg-yellow-400 text-black">
@@ -208,16 +208,16 @@ function CardForm({ onConfirm }) {
     return (
         <div className="space-y-3">
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Cardholder Name"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none" />
+                className="w-full bg-white/10 backdrop-blur-md border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none" />
             <input value={num} onChange={e => setNum(formatNum(e.target.value))} placeholder="1234 5678 9012 3456" maxLength={19}
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none tracking-widest" />
+                className="w-full bg-white/10 backdrop-blur-md border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none tracking-widest" />
             <div className="grid grid-cols-2 gap-3">
                 <input value={expiry} onChange={e => setExpiry(formatExp(e.target.value))} placeholder="MM/YY" maxLength={5}
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none" />
+                    className="bg-white/10 backdrop-blur-md border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none" />
                 <div className="relative">
                     <input value={cvv} onChange={e => setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))} placeholder="CVV" maxLength={3}
                         type={showCvv ? 'text' : 'password'}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 pr-10 text-white text-sm placeholder-gray-500 outline-none" />
+                        className="w-full bg-white/10 backdrop-blur-md border border-gray-700 rounded-xl px-4 py-3 pr-10 text-white text-sm placeholder-gray-500 outline-none" />
                     <button onClick={() => setShowCvv(!showCvv)} className="absolute right-3 top-3.5 text-gray-500">
                         {showCvv ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -237,13 +237,54 @@ function UPIForm({ onConfirm }) {
     return (
         <div className="space-y-3">
             <input value={upiId} onChange={e => setUpiId(e.target.value)} placeholder="yourname@upi"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none" />
+                className="w-full bg-white/10 backdrop-blur-md border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none" />
             <p className="text-gray-500 text-xs">e.g. name@okicici, name@ybl, name@paytm</p>
             {valid && <div className="flex items-center gap-2 text-green-400 text-sm bg-green-400/10 rounded-xl px-4 py-3"><Check className="w-4 h-4" /> UPI ID verified</div>}
             <Button onClick={() => valid && onConfirm('upi')} className={`w-full py-5 rounded-xl font-semibold ${valid ? 'bg-yellow-400 text-black' : 'bg-gray-700 text-gray-500'}`}>
                 Verify & Pay
             </Button>
         </div>
+    );
+}
+
+function VirtualCardForm({ onConfirm }) {
+    const [name, setName] = useState('Rajan Kumar');
+
+    const cardNumber = "4567 1234 5678 9012";
+    const expiry = "12/28";
+
+    return (
+    <div className="space-y-4">
+
+      {/* CARD UI */}
+        <div className="glass p-6 rounded-3xl relative overflow-hidden">
+
+        <div className="flex justify-between items-center mb-6">
+            <span className="text-white font-semibold">StickyPAY</span>
+            <span className="text-yellow-400 font-bold">VISA</span>
+        </div>
+
+        <div className="text-xl tracking-widest text-white mb-4">
+            {cardNumber}
+        </div>
+
+        <div className="flex justify-between text-sm text-gray-300">
+            <span>{name}</span>
+            <span>{expiry}</span>
+        </div>
+
+        {/* glow effect */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 blur-2xl rounded-full"></div>
+        </div>
+
+      {/* BUTTON */}
+        <Button
+        onClick={() => onConfirm('virtual_card')}
+        className="w-full py-5 rounded-xl font-semibold bg-yellow-400 text-black"
+        >
+        Use Virtual Card
+        </Button>
+    </div>
     );
 }
 
@@ -270,12 +311,13 @@ export default function PaymentSheet({ totalAmount, onPay, onClose, redeemTokens
     const walletMethod = { id: '_wallet', type: 'wallet', name: 'StickyPAY Wallet', balance: wallet.balance };
 
     const renderMethodContent = () => {
+        if (selected === '_virtual_card') return <VirtualCardForm onConfirm={onPay} />;
         if (!selected) return null;
         if (selected === '_wallet') return <WalletPay totalAmount={effectiveAmount} onConfirm={handlePay} onCancel={() => setSelected(null)} />;
         const m = savedMethods.find(x => x.id === selected);
         if (m?.type === 'card') return (
             <div className="space-y-4">
-                <div className="bg-gray-800 rounded-2xl p-4 flex items-center gap-3">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center gap-3">
                     <CreditCard className="w-6 h-6 text-blue-400" />
                     <div><p className="font-semibold">{m.name}</p><p className="text-gray-400 text-sm">•••• {m.last4}</p></div>
                 </div>
@@ -286,8 +328,8 @@ export default function PaymentSheet({ totalAmount, onPay, onClose, redeemTokens
         );
         if (m?.type === 'upi') return (
             <div className="space-y-4">
-                <div className="bg-gray-800 rounded-2xl p-4 flex items-center gap-3">
-                    <Smartphone className="w-6 h-6 text-purple-400" />
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center gap-3">
+                    <Smartphone className="w-6 h-6 text-green-400" />
                     <div><p className="font-semibold">{m.name}</p><p className="text-gray-400 text-sm">{m.upiId}</p></div>
                 </div>
                 <Button onClick={() => onPay('upi')} className="w-full py-5 rounded-xl font-semibold bg-yellow-400 text-black">
@@ -305,7 +347,7 @@ export default function PaymentSheet({ totalAmount, onPay, onClose, redeemTokens
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
                         <h2 className="text-lg font-bold">Pay ₹{effectiveAmount.toFixed(2)}</h2>
-                        <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
+                        <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
                             <X className="w-4 h-4 text-gray-400" />
                         </button>
                     </div>
@@ -323,9 +365,9 @@ export default function PaymentSheet({ totalAmount, onPay, onClose, redeemTokens
 
                             {/* Wallet */}
                             <button onClick={() => setSelected('_wallet')}
-                                className="w-full flex items-center justify-between p-4 bg-gray-800 rounded-xl border border-gray-700">
+                                className="w-full flex items-center justify-between p-4 bg-white/10 backdrop-blur-md rounded-xl border border-gray-700">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                                    <div className="w-10 h-10 bg-[#22c55e]/20 rounded-xl flex items-center justify-center">
                                         <Wallet className="w-5 h-5 text-green-400" />
                                     </div>
                                     <div className="text-left">
@@ -342,10 +384,10 @@ export default function PaymentSheet({ totalAmount, onPay, onClose, redeemTokens
                             {/* Saved Cards & UPI */}
                             {savedMethods.map(m => {
                                 const Icon = m.type === 'upi' ? Smartphone : CreditCard;
-                                const color = m.type === 'upi' ? 'text-purple-400 bg-purple-500/20' : 'text-blue-400 bg-blue-500/20';
+                                const color = m.type === 'upi' ? 'text-green-400 bg-[#22c55e]/20' : 'text-blue-400 bg-blue-500/20';
                                 return (
                                     <button key={m.id} onClick={() => setSelected(m.id)}
-                                        className="w-full flex items-center justify-between p-4 bg-gray-800 rounded-xl border border-gray-700">
+                                        className="w-full flex items-center justify-between p-4 bg-white/10 backdrop-blur-md rounded-xl border border-gray-700">
                                         <div className="flex items-center gap-3">
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
                                                 <Icon className="w-5 h-5" />
@@ -365,13 +407,17 @@ export default function PaymentSheet({ totalAmount, onPay, onClose, redeemTokens
                             })}
 
                             <p className="text-gray-400 text-sm font-medium mt-4 mb-2">Add New</p>
+                            <button onClick={() => setSelected('_virtual_card')}
+                                className="flex items-center gap-2 p-3 bg-white/10 backdrop-blur-md rounded-xl border border-dashed border-gray-600 text-gray-400 text-sm w-full">
+                                <Plus className="w-4 h-4" /> Virtual Card
+                            </button>
                             <div className="grid grid-cols-2 gap-2">
                                 <button onClick={() => setSelected('_new_card')}
-                                    className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl border border-dashed border-gray-600 text-gray-400 text-sm">
+                                    className="flex items-center gap-2 p-3 bg-white/10 backdrop-blur-md rounded-xl border border-dashed border-gray-600 text-gray-400 text-sm">
                                     <Plus className="w-4 h-4" /> New Card
                                 </button>
                                 <button onClick={() => setSelected('_new_upi')}
-                                    className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl border border-dashed border-gray-600 text-gray-400 text-sm">
+                                    className="flex items-center gap-2 p-3 bg-white/10 backdrop-blur-md rounded-xl border border-dashed border-gray-600 text-gray-400 text-sm">
                                     <Plus className="w-4 h-4" /> New UPI
                                 </button>
                             </div>

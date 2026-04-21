@@ -46,7 +46,7 @@ export default function Profile() {
       <div className="px-6 pt-6 pb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Profile</h1>
         <button onClick={() => editing ? saveProfile() : setEditing(true)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium border ${editing ? 'border-green-500 text-green-400 bg-green-500/10' : 'border-gray-700 text-gray-400'}`}>
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium border ${editing ? 'border-green-500 text-green-400 bg-[#22c55e]/10' : 'border-gray-700 text-gray-400'}`}>
           {editing ? <><Check className="w-4 h-4" /> Save</> : <><Edit2 className="w-4 h-4" /> Edit</>}
         </button>
       </div>
@@ -61,7 +61,7 @@ export default function Profile() {
             <div className="flex-1 min-w-0">
               {editing ? (
                 <input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
-                  className="w-full bg-gray-800 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm outline-none mb-1" placeholder="Full Name" />
+                  className="w-full bg-white/10 backdrop-blur-md border border-gray-600 rounded-xl px-3 py-2 text-white text-sm outline-none mb-1" placeholder="Full Name" />
               ) : (
                 <h2 className="text-xl font-bold truncate">{user?.full_name || 'Guest User'}</h2>
               )}
@@ -111,7 +111,7 @@ export default function Profile() {
               <p className="text-gray-400 text-xs">Orders</p>
             </div>
             <div className="bg-black/30 rounded-xl p-3 text-center">
-              <p className="text-xl font-bold text-green-500">₹{totalSpent.toFixed(0)}</p>
+              <p className="text-xl font-bold text-[#22c55e]">₹{totalSpent.toFixed(0)}</p>
               <p className="text-gray-400 text-xs">Spent</p>
             </div>
             <div className="bg-black/30 rounded-xl p-3 text-center">
@@ -143,7 +143,7 @@ export default function Profile() {
             <button key={item.label} onClick={() => navigate(createPageUrl(item.page))}
               className="w-full flex items-center justify-between p-4 bg-gray-900 rounded-xl border border-gray-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center">
                   <Icon className="w-5 h-5 text-yellow-400" />
                 </div>
                 <span className="font-medium">{item.label}</span>

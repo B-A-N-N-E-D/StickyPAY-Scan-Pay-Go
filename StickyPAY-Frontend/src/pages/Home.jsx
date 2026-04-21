@@ -10,11 +10,11 @@ import { StoreContext } from "@/lib/StoreContext";
 const ALL_OFFERS = [
   { code: 'SAVE10', title: '10% Off', desc: 'Get 10% off on orders above ₹500', min: 500, type: 'percent', value: 10, store: 'All Stores', color: 'from-yellow-400 to-orange-400', storeKey: null },
   { code: 'NEWUSER', title: '₹50 Off', desc: 'Flat ₹50 off for new users on first order', min: 200, type: 'flat', value: 50, store: 'All Stores', color: 'from-green-400 to-teal-500', storeKey: null },
-  { code: 'UPI5', title: '5% Cashback', desc: '5% cashback when you pay via UPI', min: 100, type: 'cashback', value: 5, store: 'All Stores', color: 'from-blue-400 to-purple-500', storeKey: null },
-  { code: 'WEEKEND20', title: '20% Off', desc: 'Weekend special — 20% off every Saturday & Sunday', min: 300, type: 'percent', value: 20, store: 'Demo Store', color: 'from-pink-400 to-rose-500', storeKey: 'Demo Store' },
+  { code: 'UPI5', title: '5% Cashback', desc: '5% cashback when you pay via UPI', min: 100, type: 'cashback', value: 5, store: 'All Stores', color: 'from-blue-400 to-green-500', storeKey: null },
+  { code: 'WEEKEND20', title: '20% Off', desc: 'Weekend special — 20% off every Saturday & Sunday', min: 300, type: 'percent', value: 20, store: 'Demo Store', color: 'from-orange-400 to-rose-500', storeKey: 'Demo Store' },
   { code: 'GROCERY15', title: '15% Off', desc: '15% off on all grocery items', min: 250, type: 'percent', value: 15, store: 'Demo Store', color: 'from-lime-400 to-green-500', storeKey: 'Demo Store' },
   { code: 'FRESH25', title: '25% Off', desc: 'Fresh produce discount - fruits & vegetables', min: 150, type: 'percent', value: 25, store: 'FreshMart', color: 'from-emerald-400 to-cyan-500', storeKey: 'FreshMart' },
-  { code: 'DAILY5', title: '₹5 Off', desc: 'Daily shopper reward on every visit', min: 50, type: 'flat', value: 5, store: 'All Stores', color: 'from-violet-400 to-indigo-500', storeKey: null },
+  { code: 'DAILY5', title: '₹5 Off', desc: 'Daily shopper reward on every visit', min: 50, type: 'flat', value: 5, store: 'All Stores', color: 'from-lime-400 to-teal-500', storeKey: null },
 ];
 
 export default function Home() {
@@ -81,7 +81,17 @@ export default function Home() {
       >
         <Link to={createPageUrl('Scanner')} className="block">
           <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-green-500 rounded-3xl p-6 relative overflow-hidden group active:scale-[0.98] transition-transform duration-200 cursor-pointer">
-            <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500" />
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: [1, 1.05, 1], opacity: 1 }}
+              transition={{ 
+                scale: { repeat: Infinity, duration: 3.5, ease: "easeInOut" },
+                opacity: { duration: 0.5 }
+              }}
+              className="absolute -top-[72px] -right-[72px] w-36 h-36"
+            >
+              <div className="w-full h-full bg-white opacity-[0.15] rounded-full group-hover:scale-125 transition-transform duration-500" />
+            </motion.div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/2 group-hover:scale-125 transition-transform duration-500" />
             <div className="relative z-10">
               <h2 className="text-black text-2xl font-bold mb-2">{currentStore ? 'Scan Items' : 'Start Shopping'}</h2>
@@ -135,7 +145,7 @@ export default function Home() {
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => navigate(createPageUrl('History'))}
-            className="bg-gray-900 rounded-2xl p-4 border border-gray-800 cursor-pointer active:bg-gray-800 transition-colors"
+            className="bg-gray-900 rounded-2xl p-4 border border-gray-800 cursor-pointer active:bg-white/10 backdrop-blur-md transition-colors"
           >
             <div className="w-9 h-9 bg-yellow-400/20 rounded-xl flex items-center justify-center mb-2">
               <Sparkles className="w-4 h-4 text-yellow-400" />
@@ -147,10 +157,10 @@ export default function Home() {
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => navigate(createPageUrl('Scanner'))}
-            className="bg-gray-900 rounded-2xl p-4 border border-gray-800 cursor-pointer active:bg-gray-800 transition-colors"
+            className="bg-gray-900 rounded-2xl p-4 border border-gray-800 cursor-pointer active:bg-white/10 backdrop-blur-md transition-colors"
           >
-            <div className="w-9 h-9 bg-green-500/20 rounded-xl flex items-center justify-center mb-2">
-              <TrendingUp className="w-4 h-4 text-green-500" />
+            <div className="w-9 h-9 bg-[#22c55e]/20 rounded-xl flex items-center justify-center mb-2">
+              <TrendingUp className="w-4 h-4 text-[#22c55e]" />
             </div>
             <p className="text-2xl font-bold">Fast</p>
             <p className="text-gray-500 text-sm">Checkout</p>
@@ -191,7 +201,7 @@ export default function Home() {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-white">₹{Number(order.total_amount || 0).toFixed(2)}</p>
-                  <p className="text-green-500 text-xs font-medium flex items-center gap-1 justify-end">
+                  <p className="text-[#22c55e] text-xs font-medium flex items-center gap-1 justify-end">
                     <Check className="w-3 h-3" /> Paid
                   </p>
                 </div>
@@ -232,7 +242,7 @@ export default function Home() {
                 key={offer.code}
                 variants={itemVariants}
                 whileHover={{ scale: 1.015, y: -2 }}
-                className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden"
+                className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-md overflow-hidden"
               >
                 <div className={`h-1.5 bg-gradient-to-r ${offer.color}`} />
                 <div className="p-4">
@@ -252,7 +262,7 @@ export default function Home() {
                     whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => copy(offer.code)}
-                    className="mt-3 w-full flex items-center justify-between bg-gray-800 border border-dashed border-gray-600 rounded-xl px-4 py-3 transition-colors"
+                    className="mt-3 w-full flex items-center justify-between bg-white/10 backdrop-blur-md border border-dashed border-gray-600 rounded-xl px-4 py-3 transition-colors"
                   >
                     <span className="font-mono font-bold text-yellow-400 tracking-widest text-sm">{offer.code}</span>
                     <span className="flex items-center gap-1 text-xs text-gray-400">

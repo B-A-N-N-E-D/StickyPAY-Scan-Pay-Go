@@ -150,7 +150,7 @@ export default function Scanner() {
 
             {/* ── No store selected ── */}
             {!activeStore && (
-                <div className="bg-[#131722] rounded-3xl p-8 flex flex-col items-center text-center border border-gray-800/60 shadow-lg mt-2">
+                <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-lg">
                     <div className="w-24 h-24 bg-[#2a2c16] rounded-3xl flex items-center justify-center mb-6">
                         <Store className="w-12 h-12 text-yellow-500 stroke-[1.5]" />
                     </div>
@@ -172,7 +172,7 @@ export default function Scanner() {
             {activeStore && (
                 <div className="space-y-4">
                     {/* Store info card */}
-                    <div className="bg-[#131722] rounded-3xl p-4 flex items-center justify-between border border-gray-800/60 shadow-lg">
+                    <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-4 border border-white/10 shadow-lg">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 bg-yellow-400 rounded-2xl flex items-center justify-center">
                                 <Store className="w-7 h-7 text-black stroke-[2]" />
@@ -185,7 +185,7 @@ export default function Scanner() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="text-gray-400 border border-gray-700 bg-transparent hover:text-white hover:bg-gray-800 rounded-xl flex items-center gap-2 font-medium px-3"
+                            className="text-gray-400 border border-gray-700 bg-transparent hover:text-white hover:bg-white/10 backdrop-blur-md rounded-xl flex items-center gap-2 font-medium px-3"
                             onClick={() => {
                                 clearStore();
                                 saveCart(null);
@@ -208,7 +208,7 @@ export default function Scanner() {
 
                     {/* ── Mini cart ── */}
                     {hasItems ? (
-                        <div className="bg-[#131722] rounded-3xl border border-gray-800/60 shadow-lg overflow-hidden">
+                        <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-lg">
                             {/* Header */}
                             <div className="flex items-center justify-between px-5 pt-5 pb-3">
                                 <div className="flex items-center gap-2">
@@ -256,8 +256,8 @@ export default function Scanner() {
                         </div>
                     ) : (
                         /* Empty state */
-                        <div className="bg-[#131722] rounded-3xl p-8 flex flex-col items-center text-center border border-gray-800/60 shadow-lg min-h-[180px] justify-center">
-                            <div className="w-14 h-14 bg-gray-800/60 rounded-2xl flex items-center justify-center mb-4">
+                        <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-lg">
+                            <div className="w-14 h-14 bg-white/10 backdrop-blur-md/60 rounded-2xl flex items-center justify-center mb-4">
                                 <ShoppingBag className="w-7 h-7 text-gray-400 stroke-[1.5]" />
                             </div>
                             <p className="text-gray-300 font-medium mb-1">No items scanned yet</p>

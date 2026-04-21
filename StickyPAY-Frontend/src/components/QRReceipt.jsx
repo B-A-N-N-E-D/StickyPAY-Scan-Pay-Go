@@ -78,7 +78,7 @@ export default function QRReceipt({ order: initialOrder }) {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-            isVerified ? 'bg-blue-500' : 'bg-green-500'
+            isVerified ? 'bg-blue-500' : 'bg-[#22c55e]'
           }`}
         >
           {isVerified
@@ -131,7 +131,7 @@ export default function QRReceipt({ order: initialOrder }) {
       )}
 
       {/* 🔥 FULL DETAILS */}
-      <div className="bg-gray-800/60 rounded-xl p-3 space-y-2 text-sm">
+      <div className="bg-white/10 backdrop-blur-md/60 rounded-xl p-3 space-y-2 text-sm">
 
         <div className="flex justify-between">
           <span className="text-gray-500">Transaction ID</span>
@@ -184,7 +184,7 @@ export default function QRReceipt({ order: initialOrder }) {
 
       {/* 🔥 ITEMS */}
       {order?.order_items?.length > 0 && (
-        <div className="bg-gray-800/60 rounded-xl p-3 mt-3 space-y-2 text-sm">
+        <div className="bg-white/10 backdrop-blur-md/60 rounded-xl p-3 mt-3 space-y-2 text-sm">
           <p className="text-gray-400 font-semibold">Items</p>
 
           {order?.order_items?.map((item, i) => {
@@ -214,7 +214,7 @@ export default function QRReceipt({ order: initialOrder }) {
       {/* BUTTON */}
       <button
         onClick={() => navigate(createPageUrl('Home'))}
-        className="mt-5 w-full py-3 bg-gray-800 rounded-xl text-gray-300 text-sm"
+        className="mt-5 w-full py-3 bg-white/10 backdrop-blur-md rounded-xl text-gray-300 text-sm"
       >
         Back to Home
       </button>

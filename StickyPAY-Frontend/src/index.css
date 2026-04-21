@@ -1,88 +1,602 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 89.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-        --sidebar-background: 0 0% 98%;
-        --sidebar-foreground: 240 5.3% 26.1%;
-        --sidebar-primary: 240 5.9% 10%;
-        --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 240 4.8% 95.9%;
-        --sidebar-accent-foreground: 240 5.9% 10%;
-        --sidebar-border: 220 13% 91%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
-    }
+/* ============================================================
+   DARK MODE VARIABLES (Default)
+   — Deep matte glass, iOS dark system colors
+   ============================================================ */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
 
-    .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-        --sidebar-background: 240 5.9% 10%;
-        --sidebar-foreground: 240 4.8% 95.9%;
-        --sidebar-primary: 224.3 76.3% 48%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 240 3.7% 15.9%;
-        --sidebar-accent-foreground: 240 4.8% 95.9%;
-        --sidebar-border: 240 3.7% 15.9%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
-    }
+  /* Backgrounds */
+  --background:           #0a0a0a;
+  --background-secondary: #111114;
+  --background-tertiary:  #1a1a1f;
+
+  /* Text — WCAG AA compliant on dark */
+  --text-primary:         #ffffff;
+  --text-secondary:       rgba(255, 255, 255, 0.60);
+  --text-tertiary:        rgba(255, 255, 255, 0.38);
+  --text-logo-accent:     #facc15;
+
+  /* Brand */
+  --primary:              #facc15;
+  --primary-foreground:   #000000;
+  --secondary:            #22c55e;
+  --destructive:          #ef4444;
+
+  /* Cards & Borders */
+  --card-bg:              rgba(255, 255, 255, 0.05);
+  --card-border:          rgba(255, 255, 255, 0.09);
+  --card-shadow:          0 4px 24px rgba(0, 0, 0, 0.5);
+
+  /* iOS-style matte DARK glass nav */
+  --nav-bg:               rgba(15, 15, 20, 0.82);
+  --nav-border:           rgba(255, 255, 255, 0.08);
+  --nav-icon:             rgba(255, 255, 255, 0.40);
+  --nav-icon-active:      #facc15;
+  --nav-shadow:           0 8px 32px rgba(0, 0, 0, 0.55);
+
+  /* Glass system */
+  --glass-bg:             rgba(22, 22, 28, 0.75);
+  --glass-border:         rgba(255, 255, 255, 0.08);
+  --glass-blur:           blur(30px) saturate(160%);
+  --glass-shadow:         0 8px 32px rgba(0, 0, 0, 0.55);
+
+  /* Inputs */
+  --input-bg:             rgba(255, 255, 255, 0.07);
+  --input-border:         rgba(255, 255, 255, 0.10);
+  --input-text:           #ffffff;
+  --input-placeholder:    rgba(255, 255, 255, 0.35);
+
+  /* Toggle */
+  --toggle-bg:            rgba(255, 255, 255, 0.08);
+  --toggle-border:        rgba(255, 255, 255, 0.12);
+  --toggle-icon:          rgba(255, 255, 255, 0.80);
+
+  /* Misc */
+  --divider:              rgba(255, 255, 255, 0.07);
+  --overlay:              rgba(0, 0, 0, 0.75);
+  --radius:               0.75rem;
 }
 
+/* ============================================================
+   LIGHT MODE VARIABLES
+   — iOS system light palette, pure black text, solid cards
+   ============================================================ */
+[data-theme="light"] {
+  color-scheme: light;
 
+  /* Backgrounds — iOS system gray hierarchy */
+  --background:           #F2F2F7;
+  --background-secondary: #FFFFFF;
+  --background-tertiary:  #E5E5EA;
 
+  /* Text — Pure black hierarchy (max readability) */
+  --text-primary:         #000000;
+  --text-secondary:       rgba(0, 0, 0, 0.60);
+  --text-tertiary:        rgba(0, 0, 0, 0.38);
+  --text-logo-accent:     #d97706;
+
+  /* Brand */
+  --primary:              #f59e0b;
+  --primary-foreground:   #000000;
+  --secondary:            #16a34a;
+  --destructive:          #dc2626;
+
+  /* Cards — solid white with shadow (NOT frosted) */
+  --card-bg:              #FFFFFF;
+  --card-border:          rgba(0, 0, 0, 0.08);
+  --card-shadow:          0 2px 12px rgba(0, 0, 0, 0.08);
+
+  /* iOS frosted glass nav */
+  --nav-bg:               rgba(242, 242, 247, 0.88);
+  --nav-border:           rgba(0, 0, 0, 0.08);
+  --nav-icon:             rgba(0, 0, 0, 0.38);
+  --nav-icon-active:      #d97706;
+  --nav-shadow:           0 4px 20px rgba(0, 0, 0, 0.10);
+
+  /* Glass system */
+  --glass-bg:             rgba(255, 255, 255, 0.80);
+  --glass-border:         rgba(0, 0, 0, 0.08);
+  --glass-blur:           blur(30px) saturate(200%);
+  --glass-shadow:         0 4px 20px rgba(0, 0, 0, 0.10);
+
+  /* Inputs */
+  --input-bg:             #FFFFFF;
+  --input-border:         rgba(0, 0, 0, 0.15);
+  --input-text:           #000000;
+  --input-placeholder:    rgba(0, 0, 0, 0.35);
+
+  /* Toggle */
+  --toggle-bg:            rgba(0, 0, 0, 0.06);
+  --toggle-border:        rgba(0, 0, 0, 0.12);
+  --toggle-icon:          rgba(0, 0, 0, 0.70);
+
+  /* Misc */
+  --divider:              rgba(0, 0, 0, 0.08);
+  --overlay:              rgba(60, 60, 100, 0.50);
+  --radius:               0.75rem;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 @layer base {
-    * {
-        @apply border-border outline-ring/50;
-    }
+  html {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
 
-    body {
-        @apply bg-background text-foreground;
-    }
+  body {
+    background: var(--background);
+    color: var(--text-primary);
+    transition: background 0.4s ease, color 0.4s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    @apply border-border;
+  }
+}
+
+/* ============================================================
+   SEAMLESS THEME TRANSITION
+   ============================================================ */
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.35s ease,
+    background 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+/* Never transition animations */
+.animate-ping,
+.animate-pulse,
+.animate-spin,
+.animate-bounce {
+  transition: none !important;
+}
+
+/* ============================================================
+   APP WRAPPER
+   ============================================================ */
+.app-wrapper {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   iOS-STYLE GLASS COMPONENTS
+   ============================================================ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow);
+}
+
+/* Top navbar */
+.glass-nav-top {
+  background: var(--nav-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: var(--nav-shadow);
+}
+
+/* Bottom navbar pill */
+.glass-nav-bottom {
+  background: var(--nav-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--nav-border);
+  border-radius: 26px;
+  box-shadow: var(--nav-shadow);
+}
+
+/* ============================================================
+   THEME TOGGLE BUTTON
+   ============================================================ */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--toggle-bg);
+  border: 1px solid var(--toggle-border);
+  color: var(--toggle-icon);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  transform: scale(1.08);
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.45);
+}
+
+.theme-toggle-btn .icon-enter {
+  animation: iconSwap 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes iconSwap {
+  0%   { transform: scale(0) rotate(-90deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+
+/* ============================================================
+   BUTTON GLOW
+   ============================================================ */
+.btn-glow {
+  background: linear-gradient(135deg, #facc15, #22c55e);
+  color: #000;
+  font-weight: 600;
+  border-radius: 999px;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.4);
+}
+
+.btn-glow:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(250, 204, 21, 0.6);
+}
+
+/* ============================================================
+   BOTTOM NAV HIDE
+   ============================================================ */
+nav {
+  transition: transform 0.3s ease, opacity 0.3s ease !important;
+}
+
+.hide-bottom-nav nav {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+/* ============================================================
+   LIGHT MODE — COMPREHENSIVE OVERRIDES
+   Research-based: iOS HIG, WCAG AA contrast, Apple system colors
+   Rule: ALL text must be #000 or dark. Cards = solid white + shadow.
+   ============================================================ */
+
+/* ── Backgrounds ── */
+[data-theme="light"] .bg-black,
+[data-theme="light"] .min-h-screen,
+[data-theme="light"] .app-wrapper {
+  background-color: var(--background) !important;
+}
+
+[data-theme="light"] body {
+  background-color: var(--background) !important;
+}
+
+/* ── ALL text → BLACK in light mode ── */
+[data-theme="light"] .text-white {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .text-gray-100,
+[data-theme="light"] .text-gray-200,
+[data-theme="light"] .text-gray-300 {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+[data-theme="light"] .text-gray-400 {
+  color: rgba(0, 0, 0, 0.60) !important;
+}
+
+[data-theme="light"] .text-gray-500 {
+  color: rgba(0, 0, 0, 0.55) !important;
+}
+
+[data-theme="light"] .text-gray-600 {
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+/* ── Cards: bg-white/5, bg-white/10 → solid white card ── */
+[data-theme="light"] .bg-white\/5,
+[data-theme="light"] .bg-white\/10,
+[data-theme="light"] .bg-white\/20 {
+  background-color: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── bg-gray-900: dark card → white card ── */
+[data-theme="light"] .bg-gray-900 {
+  background-color: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── bg-gray-700, bg-gray-800: used in buttons ── */
+[data-theme="light"] .bg-gray-700,
+[data-theme="light"] .bg-gray-800 {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── bg-black/30 inner panels ── */
+[data-theme="light"] .bg-black\/30 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ── bg-black/70, bg-black/80 → modal overlay ── */
+[data-theme="light"] .bg-black\/70,
+[data-theme="light"] .bg-black\/80 {
+  background-color: rgba(60, 60, 100, 0.50) !important;
+}
+
+/* ── PaymentSheet bottom sheet ── */
+[data-theme="light"] .rounded-t-3xl.bg-gray-900 {
+  background-color: #F2F2F7 !important;
+  backdrop-filter: blur(32px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ── Borders: all dark borders → subtle light borders ── */
+[data-theme="light"] .border-white\/10,
+[data-theme="light"] .border-white\/20,
+[data-theme="light"] .border-white\/30 {
+  border-color: rgba(0, 0, 0, 0.09) !important;
+}
+
+[data-theme="light"] .border-gray-600,
+[data-theme="light"] .border-gray-700,
+[data-theme="light"] .border-gray-800 {
+  border-color: rgba(0, 0, 0, 0.10) !important;
+}
+
+[data-theme="light"] .border-gray-800\/70 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Dashed borders (add-method buttons) ── */
+[data-theme="light"] .border-dashed {
+  border-color: rgba(0, 0, 0, 0.20) !important;
+}
+
+/* ── Dividers (divide-y) ── */
+[data-theme="light"] .divide-gray-800 > * + * {
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* ── Inputs ── */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) inset !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ── Backdrop blur overrides on white cards (keep sharp) ── */
+[data-theme="light"] .backdrop-blur-xl,
+[data-theme="light"] .backdrop-blur-md {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Keep blur only on nav elements */
+[data-theme="light"] .glass-nav-top,
+[data-theme="light"] .glass-nav-bottom {
+  backdrop-filter: blur(30px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+}
+
+/* ── Active state backgrounds for buttons ── */
+[data-theme="light"] .active\:bg-white\/10:active {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Hover effects ── */
+[data-theme="light"] .group-hover\:bg-white\/10:hover,
+[data-theme="light"] .hover\:bg-white\/10:hover,
+[data-theme="light"] .hover\:bg-gray-700:hover {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── fix font-mono on receipts in light mode ── */
+[data-theme="light"] .font-mono {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* ── QR code containers stay white ── */
+[data-theme="light"] .bg-white {
+  background-color: #FFFFFF !important;
+}
+
+/* Specific: text on top of colored gradient cards stays black */
+[data-theme="light"] .text-black {
+  color: #000000 !important;
+}
+
+/* ── Fix backdrop-blur-sm (PinPad overlay) in light ── */
+[data-theme="light"] .backdrop-blur-sm {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* ============================================================
+   PinPad — THEME-AWARE CLASSES
+   ============================================================ */
+
+/* Overlay */
+.pin-overlay {
+  background: var(--overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Card */
+.pin-card {
+  background: var(--background-secondary);
+  border: 1px solid var(--divider);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .pin-card {
+  background: #1C1C1E;
+  border-color: rgba(255,255,255,0.10);
+}
+
+[data-theme="light"] .pin-card {
+  background: #FFFFFF;
+  border-color: rgba(0,0,0,0.10);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+}
+
+/* Title */
+.pin-title {
+  color: var(--text-primary);
+}
+
+/* Label */
+.pin-label {
+  color: var(--text-secondary);
+}
+
+/* Close button */
+.pin-close-btn {
+  background: var(--toggle-bg);
+  border: 1px solid var(--toggle-border);
+  color: var(--text-secondary);
+}
+
+.pin-close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Empty dot */
+.pin-dot-empty {
+  border-color: var(--text-tertiary);
+}
+
+/* Keypad keys */
+.pin-key {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--divider);
+  font-weight: 700;
+}
+
+[data-theme="dark"] .pin-key {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.07);
+  color: #ffffff;
+}
+
+[data-theme="light"] .pin-key {
+  background: #F2F2F7;
+  border-color: rgba(0,0,0,0.08);
+  color: #000000;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.pin-key:hover {
+  opacity: 0.80;
+}
+
+.pin-key:active {
+  opacity: 0.60;
+  transform: scale(0.96);
+}
+
+/* ============================================================
+   LIGHT MODE — additional utility patches
+   ============================================================ */
+
+/* text-blue-400 (used in History verified status) readability */
+[data-theme="light"] .text-blue-400 {
+  color: #1d4ed8 !important;
+}
+
+/* text-orange-400 (pending status) */
+[data-theme="light"] .text-orange-400 {
+  color: #c2410c !important;
+}
+
+/* text-green-400 */
+[data-theme="light"] .text-green-400 {
+  color: #15803d !important;
+}
+
+/* text-red-400 */
+[data-theme="light"] .text-red-400 {
+  color: #dc2626 !important;
+}
+
+/* text-yellow-400 stays the same dark amber */
+[data-theme="light"] .text-yellow-400 {
+  color: #b45309 !important;
+}
+
+/* bg-yellow-400/10 and bg-green-500/20 tints */
+[data-theme="light"] .bg-yellow-400\/10 {
+  background-color: rgba(180, 83, 9, 0.10) !important;
+}
+
+[data-theme="light"] .bg-yellow-400\/20 {
+  background-color: rgba(180, 83, 9, 0.12) !important;
+}
+
+[data-theme="light"] .bg-green-500\/20,
+[data-theme="light"] .bg-\[\#22c55e\]\/20 {
+  background-color: rgba(21, 128, 61, 0.12) !important;
+}
+
+[data-theme="light"] .bg-red-500\/10,
+[data-theme="light"] .bg-red-500\/20 {
+  background-color: rgba(220, 38, 38, 0.08) !important;
+}
+
+[data-theme="light"] .bg-blue-500\/20 {
+  background-color: rgba(29, 78, 216, 0.10) !important;
+}
+
+[data-theme="light"] .text-blue-400 {
+  color: #1d4ed8 !important;
+}
+
+/* Scan button (bg-[#22c55e] stays green — it's a CTA) */
+/* Yellow CTA buttons stay dark text always */
+[data-theme="light"] .bg-yellow-400,
+[data-theme="light"] .from-yellow-400 {
+  /* keep as-is, text-black already handles this */
+}
+
+/* Arrow-left back button (bg-gray-900 → white in light already handled above) */
+/* Ensure its icon is dark */
+[data-theme="light"] .bg-gray-900 svg {
+  color: rgba(0,0,0,0.75) !important;
+  stroke: rgba(0,0,0,0.75) !important;
+}
+
+/* Icon colors inside white cards in light (currently using text-gray-400 etc.) */
+[data-theme="light"] .text-gray-600 svg,
+[data-theme="light"] .text-gray-500 svg {
+  color: rgba(0,0,0,0.45) !important;
 }

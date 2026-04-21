@@ -4,8 +4,8 @@ import { Tag, Copy, Check } from 'lucide-react';
 const ALL_OFFERS = [
   { code: 'SAVE10', title: '10% Off', desc: 'Get 10% off on orders above ₹500', min: 500, type: 'percent', value: 10, store: 'All Stores', color: 'from-yellow-400 to-orange-400' },
   { code: 'NEWUSER', title: '₹50 Off', desc: 'Flat ₹50 off for new users on first order', min: 200, type: 'flat', value: 50, store: 'All Stores', color: 'from-green-400 to-teal-500' },
-  { code: 'UPI5', title: '5% Cashback', desc: '5% cashback when you pay via UPI', min: 100, type: 'cashback', value: 5, store: 'All Stores', color: 'from-blue-400 to-purple-500' },
-  { code: 'WEEKEND20', title: '20% Off', desc: 'Weekend special — 20% off every Saturday & Sunday', min: 300, type: 'percent', value: 20, store: 'Demo Store', color: 'from-pink-400 to-rose-500' },
+  { code: 'UPI5', title: '5% Cashback', desc: '5% cashback when you pay via UPI', min: 100, type: 'cashback', value: 5, store: 'All Stores', color: 'from-blue-400 to-green-500' },
+  { code: 'WEEKEND20', title: '20% Off', desc: 'Weekend special — 20% off every Saturday & Sunday', min: 300, type: 'percent', value: 20, store: 'Demo Store', color: 'from-orange-400 to-rose-500' },
   { code: 'GROCERY15', title: '15% Off', desc: '15% off on all grocery items', min: 250, type: 'percent', value: 15, store: 'Demo Store', color: 'from-lime-400 to-green-500' },
 ];
 
@@ -30,7 +30,7 @@ export default function Offers() {
 
       <div className="px-6 space-y-4 pb-8">
         {ALL_OFFERS.map(offer => (
-          <div key={offer.code} className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div key={offer.code} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-md overflow-hidden">
             <div className={`h-2 bg-gradient-to-r ${offer.color}`} />
             <div className="p-4">
               <div className="flex items-start justify-between">
@@ -42,7 +42,7 @@ export default function Offers() {
               </div>
               <button
                 onClick={() => copy(offer.code)}
-                className="mt-4 w-full flex items-center justify-between bg-gray-800 border border-dashed border-gray-600 rounded-xl px-4 py-3"
+                className="mt-4 w-full flex items-center justify-between bg-white/10 backdrop-blur-md border border-dashed border-gray-600 rounded-xl px-4 py-3"
               >
                 <span className="font-mono font-bold text-yellow-400 tracking-widest text-sm">{offer.code}</span>
                 <span className="flex items-center gap-1 text-xs text-gray-400">
