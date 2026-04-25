@@ -424,7 +424,7 @@ export default function Cart() {
       )}
 
       {/* Proceed to Pay */}
-      <div className="px-5 mt-5 mb-32">
+      <div className="px-5 mt-5 pb-40">
         <Button
           onClick={() => setShowPaymentSheet(true)}
           className="w-full bg-gradient-to-r from-yellow-400 to-green-500 shadow-[0_0_25px_rgba(250,204,21,0.4)]"

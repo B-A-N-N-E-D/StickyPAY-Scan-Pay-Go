@@ -43,7 +43,7 @@ function PinPad({ title, subtitle, onSuccess, onCancel, isSetup = false }) {
     const label = step === 'set' ? 'Create PIN' : step === 'confirm' ? 'Confirm PIN' : 'Enter PIN';
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80">
             <div className="bg-gray-900 rounded-3xl p-6 w-80 border border-gray-700">
                 <div className="flex justify-between items-center mb-4">
                     <div>
@@ -342,7 +342,7 @@ export default function PaymentSheet({ totalAmount, onPay, onClose, redeemTokens
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end bg-black/70">
+        <div className="fixed inset-0 z-[60] flex items-end bg-black/70">
             <div className="w-full bg-gray-900 rounded-t-3xl border-t border-gray-800 max-h-[85vh] overflow-y-auto">
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
